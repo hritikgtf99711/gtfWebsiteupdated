@@ -369,13 +369,14 @@ const HeroSection = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkIsMobile();
+    handleVideoEnd();
     window.addEventListener("resize", checkIsMobile);
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   return (
     <section className="relative hero_section overflow-hidden md:px-[25px] px-[15px]">
-      {mounted &&
+      {/* {mounted &&
         createPortal(
           <div className="video_container">
             <video
@@ -389,8 +390,7 @@ const HeroSection = () => {
             />
           </div>,
           document.body
-        )
-      }
+        )} */}
 
       <div className="right-[20px] bottom-[30px] md:block hidden absolute ml-auto">
         <div className="flex justify-end relative">
