@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
           {location == "/" && <Header />} {children}
           <Footer />
         </div>
-        <Sidemenu/>
+        {/* <Sidemenu/> */}
       </body>
     </html>
   );

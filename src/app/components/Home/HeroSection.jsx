@@ -389,7 +389,8 @@ const HeroSection = () => {
             />
           </div>,
           document.body
-        )}
+        )
+      }
 
       <div className="right-[20px] bottom-[30px] md:block hidden absolute ml-auto">
         <div className="flex justify-end relative">
