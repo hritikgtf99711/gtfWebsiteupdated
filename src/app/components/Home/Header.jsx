@@ -1,3 +1,4 @@
+"use client"
 import { RxHamburgerMenu } from "react-icons/rx";
 
 const Header = () => {
