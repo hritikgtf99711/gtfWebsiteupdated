@@ -2,8 +2,11 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrambleTextPlugin } from "@/lib/gsap-bonus/ScrambleTextPlugin";
-import FloatingBG from "./FloatingBG";
+import dynamic from "next/dynamic";
+
 gsap.registerPlugin(ScrambleTextPlugin);
+
+const FloatingBG = dynamic(()=>import('./FloatingBG'), {ssr: false});
 
 export default function MainLoader() {
   const words = ["Digital", "Branding", "Design & Development"];
@@ -13,6 +16,7 @@ export default function MainLoader() {
 
   const textRef = useRef(null); // scrambled word
   const tlRef = useRef(null);
+  const loaderRef = useRef(null);
 
   // Tuning
   const duration = 0.5; // scramble per word
@@ -20,7 +24,7 @@ export default function MainLoader() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   useLayoutEffect(() => {
-    if (!textRef.current) return;
+    if (!textRef.current || !loaderRef.current) return;
 
     tlRef.current && tlRef.current.kill();
 
@@ -51,15 +55,33 @@ export default function MainLoader() {
     });
 
     tlRef.current = tl;
-    return () => tl.kill();
+
+    // fade out loader animation
+    const hideTimeout = setTimeout(()=>{
+      gsap.to(loaderRef.current, {
+        opacity:0,
+        duration:0.5,
+        ease:'power2.inOut',
+        onComplete:()=>{
+          gsap.set(loaderRef.current, {display:'none'}) // remove loader after finish fade effect
+        }
+      })
+    }, 4000)  
+
+
+    return () => {
+      clearTimeout(hideTimeout);
+      tl.kill()
+    };
   }, [words, wordColors, chars, duration, hold]);
 
   return (
     <>
       {/* 3D floating background layer */}
-      <FloatingBG />
 
-      <div className="fixed inset-0 h-screen w-screen bg-white z-[9999] flex items-center justify-center">
+      <div ref={loaderRef} className="fixed inset-0 h-screen w-screen bg-white z-[9999] flex items-center justify-center">
+        
+      <FloatingBG />
         <h1 className="text-black text-opacity-70 text-[clamp(20px,9vw,30px)] font-normal tracking-[1px] uppercase">
           We Are{" "}
           {/* remove Tailwind text color class so GSAP can control color */}
