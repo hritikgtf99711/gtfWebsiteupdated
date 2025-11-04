@@ -15,6 +15,7 @@ const Expertise = () => {
   const coloredLineRef = useRef(null);
   const counterRef = useRef(null);
   const hasAnimated = useRef(false);
+  const sectionRef = useRef(null);
   const [counts, setCounts] = useState({
     projects: 0,
     googleQueries: 0,
@@ -132,9 +133,31 @@ const Expertise = () => {
     },
     { dependencies: [] }
   );
+
+  // useEffect(()=>{
+  //   if(!sectionRef.current) return;
+
+  //   const scrollTrigger = ScrollTrigger.create({
+  //     trigger:sectionRef.current,
+  //     start:"top bottom",
+  //     end:"bottom top",
+  //     onEnter:()=>{
+  //       // Change body background color when section enters the 50% viewport mark
+  //       document.body.style.backgroundColor = "#ddd";
+  //     },
+  //     onLeaveBack: () => {
+  //       // Reset body background color when scrolling back up
+  //       document.body.style.backgroundColor = "";
+  //     },
+  //   });
+
+  //   return ()=>{
+  //     scrollTrigger.kill();
+  //   }
+  // }, [])
   //
   return (
-    <section className="md:pt-[170px] md:pb-[100px] py-[60px] px-[15px] lg:px-[35px]" id="experties_sec">
+    <section ref={sectionRef} className="md:pt-[100px] md:pb-[100px] py-[60px] px-[15px] lg:px-[50px] border-t" id="experties_sec">
       <div className="flex justify-between flex-wrap">
         <h2 className="relative uppercase 2xl:leading-[70px]  xl:leading-[56px]  leading-[35px] md:basis-[50%] max-h-fit">
           <span className="bartino-outline tracking-[2px] text-[30px] xl:text-[50px]  md:text-[50px] 2xl:text-[72px] block">

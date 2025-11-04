@@ -14,15 +14,17 @@ export default function RootLayout({ children }) {
 
         <div id="smooth-wrapper">
           <div id="smooth-content">
-            <SparkleBackground />
-          </div>
-        </div>
+            {/* <SparkleBackground /> */}
 
-        <div>
+            <div>
           <Header />
           {children}
           <Footer />
         </div>
+          </div>
+        </div>
+
+        
         {/* <Sidemenu/> */}
       </body>
     </html>

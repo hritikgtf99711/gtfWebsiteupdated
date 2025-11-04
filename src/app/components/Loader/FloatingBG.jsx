@@ -67,11 +67,11 @@ export default function FloatingBG() {
     <div className="fixed inset-0 -z-10 pointer-events-none">
       <Canvas gl={{ alpha: true, antialias: true }} camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 2]}>
         {/* Add lighting and shadows */}
-        <ambientLight intensity={0.3} /> {/* Soft ambient light */}
+        <ambientLight intensity={1} /> {/* Soft ambient light */}
         
         {/* Directional light centered around the scene to evenly illuminate all objects */}
         <directionalLight
-          position={[0, 0, 5]}   // Light source at the center
+          position={[-2, 0, 5]}   // Light source at the center
           intensity={1}           // Light intensity
           castShadow
           shadow-mapSize-width={1024}

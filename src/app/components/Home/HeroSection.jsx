@@ -14,6 +14,10 @@ import "swiper/css";
 import "swiper/css/pagination";
 import SparkleBackground from "../SparkleBackground";
 import { HERO_DATA } from "./hero/heroData";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { robotoCondensed } from "@/app/utils/font";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const debounce = (func, wait) => {
   let timeout;
@@ -43,6 +47,9 @@ const HeroSection = () => {
   const line3Ref = useRef(null);
   const mediaRefs = useRef([]);
   const modalRef = useRef(null);
+  const sectionRef = useRef(null);
+  const scrollState = useRef({ locked: false, y: 0 });
+  const introPinRef = useRef(null);
 
   const dotsConfig = [
     { top: "29%", left: "65%", color: "bg-gtf-blue" },
@@ -52,9 +59,55 @@ const HeroSection = () => {
     { bottom: "14%", left: "67%", color: "bg-[green]" },
   ];
 
+  const lockScroll = () => {
+    if (scrollState.current.locked) return;
+
+    const el = sectionRef.current;
+    if (!el) return;
+
+    // 1) compute absolute document offset for the section
+    const sectionTopDoc = el.getBoundingClientRect().top + window.scrollY;
+
+    // 2) snap the viewport to the section top
+    window.scrollTo(0, sectionTopDoc);
+
+    // 3) lock the body on the next frame with the correct negative doc offset
+    requestAnimationFrame(() => {
+      scrollState.current.locked = true;
+      scrollState.current.y = window.scrollY; // remember for unlock
+
+      // document.body.style.position = "fixed";
+      // document.body.style.top = `-${sectionTopDoc}px`; // NOTE: negative + px + DOC offset
+      // document.body.style.left = "0";
+      // document.body.style.right = "0";
+      // document.body.style.width = "100%";
+      // document.body.style.overflow = "hidden";
+    });
+  };
+
   useEffect(() => {
     setMounted(true);
     setIsMobile(window.innerWidth < 768);
+
+    if (headingRef.current) {
+      gsap.fromTo(
+        headingRef.current,
+        {
+          y: -50,
+          opacity: 0,
+          scale: 1,
+          duration: 1.2,
+          // ease: "back.out(1.5)",
+        },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 1.2,
+          // ease: "back.out(1.5)",
+        }
+      );
+    }
   }, []);
 
   useEffect(() => {
@@ -109,6 +162,39 @@ const HeroSection = () => {
       document.body.style.overflow = "auto";
     };
   }, [modalOpen]);
+
+  useEffect(() => {
+    if (!sectionRef.current) return;
+
+    // Pin only while the intro video hasn't completed yet
+    introPinRef.current = ScrollTrigger.create({
+      trigger: sectionRef.current,
+      start: "top top",
+      end: "+=9999999",
+      pin: true,
+      pinSpacing: false,
+      anticipatePin: 1,
+      onEnter: () => {
+        if (!videoRef.current) return;
+        videoRef.current.style.display = "block";
+        // document.body.style.position = "fixed";
+        document.body.style.overflow = "hidden";
+
+        videoRef.current.muted = true;
+        videoRef.current.setAttribute("muted", "");
+        videoRef.current.playsInline = true;
+        videoRef.current.setAttribute("playsinline", "");
+        videoRef.current.play?.().catch(() => {});
+      },
+    });
+
+    return () => {
+      introPinRef.current?.kill();
+      introPinRef.current = null;
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const openModal = (content) => {
     setModalContent(content);
@@ -167,6 +253,15 @@ const HeroSection = () => {
   );
 
   const handleVideoEnd = () => {
+    // 1) restore scrolling
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+
+    // 2) unpin NOW
+    introPinRef.current?.kill();
+    introPinRef.current = null;
+    ScrollTrigger.refresh();
+
     setVideoCompleted(true);
     const tl = gsap.timeline({
       onComplete: () => setSwiperReady(true),
@@ -205,19 +300,6 @@ const HeroSection = () => {
         ease: "expo.out",
       },
       "-=0.3"
-    );
-
-    tl.fromTo(
-      headingRef.current,
-      { y: 50, opacity: 0, scale: 0.95 },
-      {
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        duration: 1.2,
-        ease: "back.out(1.5)",
-      },
-      "-=0.8"
     );
 
     tl.fromTo(
@@ -295,9 +377,10 @@ const HeroSection = () => {
     });
 
     if (!info.name) return;
-    const isVideo = info.video || info.img.endsWith(".mp4") || info.img.endsWith(".webm");
+    const isVideo =
+      info.video || info.img.endsWith(".mp4") || info.img.endsWith(".webm");
     const mediaPath = `/assets/home/hero/${info.video || info.img}`;
-    
+
     openModal({
       type: isVideo ? "video" : "image",
       path: mediaPath,
@@ -369,29 +452,15 @@ const HeroSection = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkIsMobile();
-    handleVideoEnd();
+    // handleVideoEnd();
     window.addEventListener("resize", checkIsMobile);
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   return (
-    <section className="relative hero_section overflow-hidden md:px-[25px] px-[15px]">
-      {/* {mounted &&
-        createPortal(
-          <div className="video_container">
-            <video
-              ref={videoRef}
-              src="/assets/home/hero/main_video.mp4"
-              className="w-full h-full z-[9999] object-cover fixed top-0 left-0 transition-opacity duration-500"
-              autoPlay
-              playsInline
-              muted
-              onEnded={handleVideoEnd}
-            />
-          </div>,
-          document.body
-        )} */}
-
+    <section className={`relative hero_section overflow-hidden mb-[100px] ${videoCompleted ? 'md:px-[50px]' : 'md:px-0'}`}>
+      {" "}
+      {/* md:px-[25px] px-[15px]*/}
       <div className="right-[20px] bottom-[30px] md:block hidden absolute ml-auto">
         <div className="flex justify-end relative">
           {dotsConfig.map((dot, index) => {
@@ -419,12 +488,11 @@ const HeroSection = () => {
           />
         </div>
         <p className="font-[Oswald] lg:w-[auto] w-[60%] ml-[auto] font-[400] text-end z-[2] text-[15px] mr-[12px] md:block hidden">
-          <span className="font-medium">GTF Technologies</span> is conceptualized
-          from <span className="lg:block"></span>
+          <span className="font-medium">GTF Technologies</span> is
+          conceptualized from <span className="lg:block"></span>
           <span className="font-medium"> Gurukul The Foundation</span>
         </p>
       </div>
-
       <div
         ref={line1Ref}
         className="mix-blend-multiply h-[10px] md:block hidden md:h-[25px] w-[80%] absolute top-[calc(56%)] bg-gtf-pink opacity-0"
@@ -433,20 +501,22 @@ const HeroSection = () => {
         ref={line2Ref}
         className="mix-blend-multiply h-[10px] md:block hidden md:h-[25px] w-[80%] absolute 2xl:bottom-[135px] bottom-[85px] md:right-[-196px] bg-gtf-yellow opacity-0"
       ></div>
-
       <img
         src="/assets/home/hero/circle.svg"
         className="2xl:h-[450px] md:h-[300px] h-[300px] rotate-plus absolute rotation_circle 2xl:top-[40%] lg:top-[40%] bottom-[0] opacity-0 lg:left-[15%]"
         alt="Decorative circle"
       />
-
-      <div className="2xl:h-[calc(100vh-130px)] lg:h-[calc(100vh-100px)] relative md:pt-[0] z-[4]">
+      <div className="relative md:pt-[80px] z-[4] ">
         <div
-          className="flex justify-center 2xl:mb-10 mb-8 heading-container"
+          className={`flex justify-center ${
+            videoCompleted ? "2xl:mb-10" : "2xl:mb-[150px]"
+          } mb-8 heading-container`}
           ref={headingRef}
           style={{ opacity: 0, transition: "transform 0.3s ease-out" }}
         >
-          <h1 className="uppercase text-center font-bold font-[Oswald] text-global-color tracking-[1px]">
+          <h1
+            className={`text-center font-[500] font-robotoCondensed text-global-color tracking-[1px]`}
+          >
             <span className="md:block 2xl:text-5xl lg:text-[35px] text-[26px] 2xl:mb-[12px]">
               Branding, Digital Marketing
             </span>
@@ -456,217 +526,241 @@ const HeroSection = () => {
           </h1>
         </div>
 
-        <div className="flex justify-between flex-wrap items-stretch">
-          <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
-            {HERO_DATA.map((_, index) => (
-              <span
-                key={index}
-                className={`block border-b-[1px] border-[#1E251F] transition-all duration-500 mb-[4px] ${
-                  index === activeIndex ? "w-[15%]" : "w-[10%]"
-                }`}
+        <div ref={sectionRef} className={`relative ${videoCompleted ? 'h-[calc(100vh-300px)]' : ''}`}>
+          {mounted && !videoCompleted && (
+            <div className="video_container !absolute top-0 left-0 w-full h-screen z-[9999]">
+              <video
+                ref={videoRef}
+                src="/assets/home/hero/main_video.mp4"
+                className="w-full h-full object-cover transition-opacity duration-500"
+                // autoPlay
+                playsInline
+                muted
+                onEnded={handleVideoEnd}
               />
-            ))}
-          </div>
+              <button
+                className="absolute right-[100px] bottom-[50px] text-white uppercase tracking-[1px] text-[14px]"
+                onClick={handleVideoEnd}
+              >
+                Skip Video
+              </button>
+            </div>
+          )}
 
-          <div
-            className="md:basis-[40%] basis-[90%] m-auto md:h-[calc(100vh)] h-[calc(80vh-200px)] xl:pb-[150px] relative swiper_container"
-            ref={containerRef}
-          >
-            <Swiper
-              direction="vertical"
-              slidesPerView={1}
-              spaceBetween={8}
-              onInit={(swiper) => {
-                swiperInstance.current = swiper;
-                swiper.slideTo(0);
-                setTimeout(() => {
-                  swiper.slides.forEach((slide) => {
-                    if (slide) slide.classList.remove("swiper-slide-active");
-                  });
-                  swiper.slides[0]?.classList.add("swiper-slide-active");
-                  if (videoCompleted) setSwiperReady(true);
-                }, 100);
-              }}
-              freeMode={{
-                enabled: true,
-                sticky: true,
-                momentumBounce: false,
-                momentumRatio: 0.5,
-                momentumVelocityRatio: 0.5,
-              }}
-              mousewheel={{
-                enabled: !isMobile || !isLastSlide,
-                forceToAxis: true,
-                releaseOnEdges: true,
-                sensitivity: 0.3,
-                thresholdDelta: 10,
-              }}
-              touchRatio={isMobile && isLastSlide ? 0 : 1}
-              touchAngle={45}
-              touchMoveStopPropagation={true}
-              touchStartPreventDefault={true}
-              resistanceRatio={0}
-              speed={500}
-              grabCursor={true}
-              pagination={{ clickable: true }}
-              edgeSwipeDetection={true}
-              edgeSwipeThreshold={20}
-              modules={[Mousewheel, Pagination, FreeMode, Virtual, Keyboard]}
-              className="h-full pb-[100px] swiper_main_container"
-              onSlideChange={handleSlideChange}
-              onReachEnd={() => {
-                if (isMobile) {
-                  setIsLastSlide(true);
-                }
-              }}
-              onProgress={(swiper, progress) => {
-              if (!containerRef.current || !headingRef.current) return;
-              const maxSlides = HERO_DATA.length;
-              if (maxSlides === 0) return; 
-              const slideProgress = activeIndex / maxSlides + progress / maxSlides;
-              const rawYOffset = isMobile ? -800 * slideProgress : -1800 * slideProgress;
-              const yOffset = rawYOffset === -300 ? 0 : rawYOffset;
-              const scale = isMobile ? 1 - 0.008 * slideProgress : 1 - 0.015 * slideProgress;
-              headingRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale3d(${scale}, ${scale}, 1)`;
-            }}
-              breakpoints={{
-                320: {
-                  slidesPerView: 3,
-                  spaceBetween: 4,
-                  freeMode: {
-                    enabled: true,
-                    sticky: true,
-                    momentumBounce: false,
-                    momentumRatio: 0.5,
-                    momentumVelocityRatio: 0.5,
-                  },
-                },
-                600: {
-                  slidesPerView: 3,
-                  spaceBetween: 6,
-                  freeMode: {
-                    enabled: true,
-                    sticky: true,
-                    momentumBounce: false,
-                    momentumRatio: 0.5,
-                    momentumVelocityRatio: 0.5,
-                  },
-                },
-                768: {
-                  slidesPerView: 3,
-                  spaceBetween: 6,
-                },
-                1280: {
-                  slidesPerView: 3,
-                  spaceBetween: 6,
-                },
-                1320: {
-                  slidesPerView: 4,
-                  spaceBetween: 6,
-                },
-              }}
-            >
-              {HERO_DATA.map((info, index) => (
-                <SwiperSlide
-                  key={`${info.id || info.name}-${index}`}
-                  onMouseEnter={() => handleSlideHover(index)}
-                  onMouseLeave={handleSlideMouseLeave}
-                  style={{
-                    transition: "opacity 0.4s ease-in-out",
-                  }}
-                  className={activeIndex === index ? "swiper-slide-active" : ""}
-                >
-                  <figure
-                    style={{ opacity: videoCompleted ? 1 : 0 }}
-                    className="h-full relative img_container cursor-pointer"
-                    onClick={(e) => handleSlideClick(info, index, e)}
-                  >
-                    <div className="overlay_container"></div>
-                    <div className="bc_wrapper">
-                      <div className="left">
-                        <div className="t">
-                          <div className="h"></div>
-                          <div className="v"></div>
-                        </div>
-                        <div className="b">
-                          <div className="h"></div>
-                          <div className="v"></div>
-                        </div>
-                      </div>
-                      <div className="right">
-                        <div className="t">
-                          <div className="h"></div>
-                          <div className="v"></div>
-                        </div>
-                        <div className="b">
-                          <div className="h"></div>
-                          <div className="v"></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {info.video ||
-                    info.img.endsWith(".mp4") ||
-                    info.img.endsWith(".webm") ? (
-                      <video
-                        ref={(el) => (mediaRefs.current[index] = el)}
-                        src={`/assets/home/hero/${info.video || info.img}`}
-                        className="w-full h-full z-10 object-cover transition-transform duration-500"
-                        loop
-                        autoPlay
-                        playsInline
-                        muted
-                      />
-                    ) : (
-                      <img
-                        ref={(el) => (mediaRefs.current[index] = el)}
-                        src={`/assets/home/hero/${info.img}`}
-                        className="w-full h-full z-10 object-cover transition-transform duration-500"
-                        alt={info.name}
-                      />
-                    )}
-
-                    {info.name && (
-                      <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity duration-300 z-20">
-                        <img
-                          src="/assets/home/hero/full-screen.png"
-                          alt="zoom_arrow"
-                          height="20"
-                          className="w-[22px]"
-                        />
-                      </div>
-                    )}
-                  </figure>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-          <div className="flex-[1] z-[7] flex flex-col md:block hidden relative justify-between h-[100%] translate-x-[200%] option_listing mb-[auto] 2xl:mt-[80px]">
-            <ul>
-              {HERO_DATA.map((info, index) => (
-                <li
+          <div className="flex justify-between flex-wrap items-stretch pt-[80px]">
+            <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
+              {HERO_DATA.map((_, index) => (
+                <span
                   key={index}
-                  onMouseEnter={() => handleTextHover(index)}
-                  onMouseLeave={handleSlideMouseLeave}
-                  className={`font-[Oswald] cursor-pointer 2xl:text-lg md:!text-[16px] !text-[12px] uppercase font-semibold text-right transition-all duration-500 2xl:mb-1 ${
-                    index === activeIndex ? "text-black" : "text-[#b5b6b2]"
+                  className={`block border-b-[1px] border-[#1E251F] transition-all duration-500 mb-[4px] ${
+                    index === activeIndex ? "w-[15%]" : "w-[10%]"
                   }`}
-                >
-                  {info.name}
-                </li>
+                />
               ))}
-            </ul>
+            </div>
+
+            <div
+              className="md:basis-[40%] basis-[90%] m-auto md:h-[calc(100vh)] h-[calc(80vh-200px)] xl:pb-[150px] relative swiper_container"
+              ref={containerRef}
+            >
+              <Swiper
+                direction="vertical"
+                slidesPerView={1}
+                spaceBetween={8}
+                onInit={(swiper) => {
+                  swiperInstance.current = swiper;
+                  swiper.slideTo(0);
+                  setTimeout(() => {
+                    swiper.slides?.forEach((slide) => {
+                      if (slide) slide.classList.remove("swiper-slide-active");
+                    });
+                    swiper.slides[0]?.classList.add("swiper-slide-active");
+                    if (videoCompleted) setSwiperReady(true);
+                  }, 100);
+                }}
+                freeMode={{
+                  enabled: true,
+                  sticky: true,
+                  momentumBounce: false,
+                  momentumRatio: 0.5,
+                  momentumVelocityRatio: 0.5,
+                }}
+                mousewheel={{
+                  enabled: !isMobile || !isLastSlide,
+                  forceToAxis: true,
+                  releaseOnEdges: true,
+                  sensitivity: 0.3,
+                  thresholdDelta: 10,
+                }}
+                touchRatio={isMobile && isLastSlide ? 0 : 1}
+                touchAngle={45}
+                touchMoveStopPropagation={true}
+                touchStartPreventDefault={true}
+                resistanceRatio={0}
+                speed={500}
+                grabCursor={true}
+                pagination={{ clickable: true }}
+                edgeSwipeDetection={true}
+                edgeSwipeThreshold={20}
+                modules={[Mousewheel, Pagination, FreeMode, Virtual, Keyboard]}
+                className="h-full pb-[100px] swiper_main_container"
+                onSlideChange={handleSlideChange}
+                onReachEnd={() => {
+                  if (isMobile) {
+                    setIsLastSlide(true);
+                  }
+                }}
+                onProgress={(swiper, progress) => {
+                  if (!containerRef.current || !headingRef.current) return;
+                  const maxSlides = HERO_DATA.length;
+                  if (maxSlides === 0) return;
+                  const slideProgress =
+                    activeIndex / maxSlides + progress / maxSlides;
+                  const rawYOffset = isMobile
+                    ? -800 * slideProgress
+                    : -1800 * slideProgress;
+                  const yOffset = rawYOffset === -300 ? 0 : rawYOffset;
+                  const scale = isMobile
+                    ? 1 - 0.008 * slideProgress
+                    : 1 - 0.015 * slideProgress;
+                  headingRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale3d(${scale}, ${scale}, 1)`;
+                }}
+                breakpoints={{
+                  320: {
+                    slidesPerView: 3,
+                    spaceBetween: 4,
+                    freeMode: {
+                      enabled: true,
+                      sticky: true,
+                      momentumBounce: false,
+                      momentumRatio: 0.5,
+                      momentumVelocityRatio: 0.5,
+                    },
+                  },
+                  600: {
+                    slidesPerView: 3,
+                    spaceBetween: 6,
+                    freeMode: {
+                      enabled: true,
+                      sticky: true,
+                      momentumBounce: false,
+                      momentumRatio: 0.5,
+                      momentumVelocityRatio: 0.5,
+                    },
+                  },
+                  768: {
+                    slidesPerView: 3,
+                    spaceBetween: 6,
+                  },
+                  1280: {
+                    slidesPerView: 3,
+                    spaceBetween: 6,
+                  },
+                  1320: {
+                    slidesPerView: 4,
+                    spaceBetween: 6,
+                  },
+                }}
+              >
+                {HERO_DATA.map((info, index) => (
+                  <SwiperSlide
+                    key={`${info.id || info.name}-${index}`}
+                    onMouseEnter={() => handleSlideHover(index)}
+                    onMouseLeave={handleSlideMouseLeave}
+                    style={{
+                      transition: "opacity 0.4s ease-in-out",
+                    }}
+                    className={
+                      activeIndex === index ? "swiper-slide-active" : ""
+                    }
+                  >
+                    <figure
+                      style={{ opacity: videoCompleted ? 1 : 0 }}
+                      className="h-full relative img_container cursor-pointer"
+                      onClick={(e) => handleSlideClick(info, index, e)}
+                    >
+                      <div className="overlay_container"></div>
+                      <div className="bc_wrapper">
+                        <div className="left">
+                          <div className="t">
+                            <div className="h"></div>
+                            <div className="v"></div>
+                          </div>
+                          <div className="b">
+                            <div className="h"></div>
+                            <div className="v"></div>
+                          </div>
+                        </div>
+                        <div className="right">
+                          <div className="t">
+                            <div className="h"></div>
+                            <div className="v"></div>
+                          </div>
+                          <div className="b">
+                            <div className="h"></div>
+                            <div className="v"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {info.video ||
+                      info.img.endsWith(".mp4") ||
+                      info.img.endsWith(".webm") ? (
+                        <video
+                          ref={(el) => (mediaRefs.current[index] = el)}
+                          src={`/assets/home/hero/${info.video || info.img}`}
+                          className="w-full h-full z-10 object-cover transition-transform duration-500"
+                          loop
+                          autoPlay
+                          playsInline
+                          muted
+                        />
+                      ) : (
+                        <img
+                          ref={(el) => (mediaRefs.current[index] = el)}
+                          src={`/assets/home/hero/${info.img}`}
+                          className="w-full h-full z-10 object-cover transition-transform duration-500"
+                          alt={info.name}
+                        />
+                      )}
+
+                      {info.name && (
+                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                          <img
+                            src="/assets/home/hero/full-screen.png"
+                            alt="zoom_arrow"
+                            height="20"
+                            className="w-[22px]"
+                          />
+                        </div>
+                      )}
+                    </figure>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+            <div className="flex-[1] z-[7] flex flex-col md:block hidden relative justify-between h-[100%] translate-x-[200%] option_listing mb-[auto] 2xl:mt-[80px] text-right">
+              <ul className="w-auto inline-block">
+                {HERO_DATA.map((info, index) => (
+                  <li
+                    key={index}
+                    onMouseEnter={() => handleTextHover(index)}
+                    onMouseLeave={handleSlideMouseLeave}
+                    className={`font-[Oswald] cursor-pointer 2xl:text-lg md:!text-[16px] !text-[12px] uppercase font-semibold text-right transition-all duration-500 2xl:mb-1 ${
+                      index === activeIndex ? "text-black" : "text-[#b5b6b2]"
+                    }`}
+                  >
+                    {info.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
       <button className="bg-[#1E251F] md:hidden block flex gap-[5px] font-[700] relative z-[999] justify-center mt-[15px] place-items-center text-white px-4 py-[2px] font-[500] w-[calc(100%-74px)]  font-[oswald] m-auto before:content-[''] before:absolute before:h-[166px] before:w-[100%] before:bottom-[148px] before:bg-[transparent] ">
         MEET NOW
-        <svg
-          width="34"
-          height="34"
-          viewBox="0 0 34 34"
-          fill="none"
-        >
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
           <path
             d="M20.6277 14.7276L12.0208 23.3345L10.6066 21.9203L19.2135 13.3134L11.6277 13.3134L11.6277 11.3137H22.6274V22.3135L20.6277 22.3135V14.7276Z"
             fill="white"
@@ -678,7 +772,6 @@ const HeroSection = () => {
         <div className="mix-blend-multiply my-[4px] h-[6px] w-[40px] bg-gtf-yellow"></div>
         <div className="mix-blend-multiply h-[6px] w-[40px] bg-gtf-blue"></div>
       </div>
-
       {mounted &&
         modalOpen &&
         modalContent &&
@@ -755,7 +848,6 @@ const HeroSection = () => {
           </div>,
           document.body
         )}
-
       <div className="">
         <div
           ref={line3Ref}

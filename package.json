@@ -12,6 +12,7 @@
     "@gsap/react": "^2.1.2",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.4.0",
+    "@studio-freight/lenis": "^1.0.42",
     "@types/gsap": "^1.20.2",
     "gsap": "npm:@gsap/business@^3.12.7",
     "imagesloaded": "^5.0.0",

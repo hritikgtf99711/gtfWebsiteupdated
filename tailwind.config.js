@@ -72,6 +72,10 @@ module.exports = {
         xl: "1280px",
         "2xl": "1430px",
       },
+      fontFamily:{
+        'robotoCondensed': ['Roboto Condensed', 'sans-serif'],
+        oswald: ['Oswald', 'sans-serif'],
+      }
     },
   },
   plugins: [
