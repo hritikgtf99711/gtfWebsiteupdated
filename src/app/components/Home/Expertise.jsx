@@ -86,6 +86,7 @@ const Expertise = () => {
       if (counterRef.current) {
         observer.unobserve(counterRef.current);
       }
+      ScrollTrigger.refresh();
     };
   }, []);
 
@@ -127,8 +128,10 @@ const Expertise = () => {
       return () => {
         if (circleAnimation.scrollTrigger) {
           circleAnimation.scrollTrigger.kill();
+          ScrollTrigger.refresh();
         }
         circleAnimation.kill();
+        ScrollTrigger.refresh();
       };
     },
     { dependencies: [] }

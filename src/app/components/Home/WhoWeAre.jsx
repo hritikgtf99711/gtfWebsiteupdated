@@ -133,7 +133,8 @@ const WhoWeAre = () => {
         pin: true,
         scrub: 1,
         pinSpacing: true,
-        ease: "none",
+        markers:true
+        // ease: "none",
       },
     });
 
@@ -190,6 +191,7 @@ const WhoWeAre = () => {
 
     // Cleanup function
     return () => {
+      ScrollTrigger.refresh();
       const mainTrigger = ScrollTrigger.getById("whoWeAreTrigger");
       mainTrigger?.kill();
       tl.kill();
