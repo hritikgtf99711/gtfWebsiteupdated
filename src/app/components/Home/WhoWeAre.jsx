@@ -133,9 +133,7 @@ const WhoWeAre = () => {
         pin: true,
         scrub: 1,
         pinSpacing: true,
-        markers:true
-        // ease: "none",
-      },
+      },  
     });
 
     const splitInstances = textRef.current
@@ -157,12 +155,11 @@ const WhoWeAre = () => {
       section,
       {
         x: -maxTranslateX,
-        ease: "power1.out", // Smoother ease for better control
-        duration: 12, // Increased duration for slower horizontal movement
+        ease: "power1.out",
+        duration: 12, 
         onUpdate: function () {
           images.forEach((image, index) => {
-            if (animatedIndices.includes(index)) return;
-
+            if (animatedIndices.includes(index)) return;s
             const rect = image.getBoundingClientRect();
             if (rect.right > 0 && rect.left < window.innerWidth) {
               gsap.to(image, {
@@ -188,7 +185,7 @@ const WhoWeAre = () => {
       },
       "-=1.5"
     );
-
+    
     // Cleanup function
     return () => {
       ScrollTrigger.refresh();
@@ -201,8 +198,9 @@ const WhoWeAre = () => {
         if (image.parentNode) image.parentNode.style.overflow = "";
       });
     };
-  }, []);
+  }, []); 
 
+  
   return (
     <section className="w-full  mix-blend-multiply overflow-hidden">
       <div ref={containerRef} className="pin-container">

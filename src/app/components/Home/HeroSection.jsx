@@ -146,70 +146,16 @@ const HeroSection = () => {
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        closeModal();
-      }
-    };
-
-    if (modalOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.body.style.overflow = "auto";
-    };
-  }, [modalOpen]);
-
-  useEffect(() => {
     if (!sectionRef.current) return;
-
-    // Pin only while the intro video hasn't completed yet
-
-    // introPinRef.current = ScrollTrigger.create({
-    //   trigger: sectionRef.current,
-    //   start: "top top",
-    //   end: "+=9999999",
-    //   pin: true,
-    //   pinSpacing: true,
-    //   scrub: false,
-    //   id: "hero-pin",
-    //   anticipatePin: 1,
-    //   scroller: "#smooth-wrapper",
-    //   markers: true,
-    //   onEnter: () => {
-    //     if (!videoRef.current) return;
-    //     videoRef.current.style.display = "block";
-    //     // document.body.style.position = "fixed";
-    //     // document.body.style.overflow = "hidden";
-
-    //     videoRef.current.muted = true;
-    //     videoRef.current.setAttribute("muted", "");
-    //     videoRef.current.playsInline = true;
-    //     videoRef.current.setAttribute("playsinline", "");
-    //     videoRef.current.play?.().catch(() => {});
-    //   },
-    // });
-
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
         start: "top top",
-        end: "+=5000", // 5 seconds of scroll = perfect for video
         pin: true,
-        pinSpacing: true,
-        scrub: true,
-        scroller: "#smooth-wrapper", // ← ONLY LINE YOU NEED
-        anticipatePin: 1,
-        markers: false,
-        id: "hero-video-pin",
         onEnter: () => {
           if (!videoRef.current) return;
           videoRef.current.style.display = "block";
-          // document.body.style.position = "fixed";
-          document.body.style.overflow = "hidden";
+          document.querySelector("#smooth-content").style.overflow="hidden";
   
           videoRef.current.muted = true;
           videoRef.current.setAttribute("muted", "");
@@ -219,23 +165,15 @@ const HeroSection = () => {
         },
       }
     });
-  
-    // Save for kill
     introPinRef.current = tl.scrollTrigger;
-  
     return () => {
       tl.scrollTrigger?.kill();
       introPinRef.current?.kill();
-      ScrollTrigger.refresh();
+      // ScrollTrigger.refresh();
     };
 
-    // return () => {
-    //   introPinRef.current?.kill();
-    //   introPinRef.current = null;
-    //   document.documentElement.style.overflow = "";
-    //   document.body.style.overflow = "";
-    // };
   }, []);
+
 
   const openModal = (content) => {
     setModalContent(content);
@@ -403,7 +341,6 @@ const HeroSection = () => {
     );
   };
 
-  // Handle slide click
   const handleSlideClick = useCallback((info, index, event) => {
     setActiveIndex(index);
     setLastActiveIndex(index);
@@ -431,7 +368,6 @@ const HeroSection = () => {
     });
   }, []);
 
-  // Debounced hover handlers
   const handleSlideHover = useCallback(
     debounce((index) => {
       setActiveIndex(index);

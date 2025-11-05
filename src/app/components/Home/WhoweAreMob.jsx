@@ -212,8 +212,9 @@ const WhoWeAreMob = () => {
           end: "+=300",
           pin: true,
           scrub: 1,
-          pinSpacing: true,
+          // pinSpacing: true,
           ease: "none",
+         
         },
       });
 
