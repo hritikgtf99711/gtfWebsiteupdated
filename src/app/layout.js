@@ -4,10 +4,18 @@ import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Header from "./components/Home/Header";
+import Footer from "./components/Home/Footer";
+import { usePathname } from "next/navigation";
+import MainLoader from "./components/Loader/Index";
 
 gsap.registerPlugin(ScrollSmoother,ScrollTrigger );
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  
   useEffect(() => {
 
     const smoother = ScrollSmoother.create({
@@ -25,9 +33,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+      <MainLoader />
         <div id="smooth-wrapper">
           <div id="smooth-content">
+          {isHome && <Header />}
             {children}
+            <Footer />
           </div>
         </div>
       </body>
