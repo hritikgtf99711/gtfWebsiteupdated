@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother );
+gsap.registerPlugin(ScrollSmoother,ScrollTrigger );
 
 export default function RootLayout({ children }) {
   useEffect(() => {
@@ -14,6 +14,7 @@ export default function RootLayout({ children }) {
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
       smooth: 2,
+      normalizeScroll:true
     });
 
     
