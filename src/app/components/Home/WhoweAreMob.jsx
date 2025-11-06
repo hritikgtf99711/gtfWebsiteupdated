@@ -187,97 +187,93 @@ const WhoWeAreMob = () => {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const section = sectionRef.current;
     const container = containerRef.current;
     const textContainer = textContainerRef.current;
-
-    if (!section || !container || !textContainer) {
-      console.warn("Required elements not found");
-      return;
-    }
+    if (!container || !textContainer) return;
 
     let splitText;
     let chars;
 
-    try {
-      // Text animation
-      splitText = new SplitText(textContainer, { type: "chars" });
-      chars = splitText.chars;
+    // === TEXT ANIMATION ===
+    splitText = new SplitText(textContainer, { type: "chars" });
+    chars = splitText.chars;
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          id: "whoWeAreTrigger",
-          trigger: container,
-          start: "top top",
-          end: "+=300",
-          pin: true,
-          scrub: 1,
-          // pinSpacing: true,
-          ease: "none",
-         
-        },
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        id: "who-we-are-pin",
+        trigger: container,
+        start: "top top+=100",   // Avoid overlap with hero
+        end: "+=300",
+        pin: true,
+        pinSpacing: false,       // Critical!
+        anticipatePin: 1,
+        scrub: 1,
+        scroller: "#smooth-wrapper",
+        // onLeave: () => ScrollTrigger.refresh(), // Optional
+      },
+    });
+
+    tl.fromTo(
+      chars,
+      { opacity: 0.2, scale: 0.95 },
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: "none",
+      }
+    );
+
+    pinTriggerRef.current = tl.scrollTrigger;
+
+    // === IMAGE ANIMATIONS ===
+    imagesRef.current.forEach((image, index) => {
+      if (!image) return;
+
+      ScrollTrigger.create({
+        trigger: image,
+        start: "top bottom-=100",
+        scroller: "#smooth-wrapper",
+        toggleActions: "play none none reverse",
+        animation: gsap.fromTo(
+          image,
+          {
+            opacity: 0,
+            y: 50,
+            clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+            duration: 1.2,
+            ease: "power3.out",
+          }
+        ),
       });
-
-      tl.fromTo(
-        chars,
-        { opacity: 0.2, scale: 0.95 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.5,
-          stagger: 0.08,
-          ease: "none",
-        }
-      );
-
-      // Image reveal animations
-      imagesRef.current.forEach((image, index) => {
-        if (image) {
-          gsap.fromTo(
-            image,
-            {
-              opacity: 0,
-              y: 50,
-              clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
-            },
-            {
-              opacity: 1,
-              y: 0,
-              clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-              duration: 1.2,
-              delay: index * 0.2 + 0.3,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: image,
-                start: "top bottom-=100",
-                toggleActions: "play none none reverse",
-              },
-            }
-          );
-        }
-      });
-    } catch (error) {
-      console.error("Animation setup error:", error);
-    }
+    });
 
     return () => {
-      const mainTrigger = ScrollTrigger.getById("whoWeAreTrigger");
-      if (mainTrigger) mainTrigger.kill();
-
-      if (splitText && typeof splitText.revert === "function") {
-        splitText.revert();
+      // Kill main pin
+      if (pinTriggerRef.current) {
+        pinTriggerRef.current.kill();
+        pinTriggerRef.current = null;
       }
 
-      ScrollTrigger.getAll().forEach((trigger) => {
-        if (
-          trigger.trigger === container ||
-          imagesRef.current.includes(trigger.trigger)
-        ) {
-          trigger.kill();
+      // Kill image triggers
+      ScrollTrigger.getAll().forEach((st) => {
+        if (imagesRef.current.includes(st.trigger)) {
+          st.kill();
         }
       });
 
-      ScrollTrigger.refresh();
+      if (splitText?.revert) splitText.revert();
+
+      // Safe refresh after cleanup
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+      });
     };
   }, []);
 

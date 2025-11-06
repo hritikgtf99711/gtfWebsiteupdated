@@ -48,7 +48,6 @@ const HeroSection = () => {
   const mediaRefs = useRef([]);
   const modalRef = useRef(null);
   const sectionRef = useRef(null);
-  const scrollState = useRef({ locked: false, y: 0 });
   const introPinRef = useRef(null);
 
   const dotsConfig = [
@@ -59,32 +58,6 @@ const HeroSection = () => {
     { bottom: "14%", left: "67%", color: "bg-[green]" },
   ];
 
-  const lockScroll = () => {
-    if (scrollState.current.locked) return;
-
-    const el = sectionRef.current;
-    if (!el) return;
-
-    // 1) compute absolute document offset for the section
-    const sectionTopDoc = el.getBoundingClientRect().top + window.scrollY;
-
-    // 2) snap the viewport to the section top
-    window.scrollTo(0, sectionTopDoc);
-
-    // 3) lock the body on the next frame with the correct negative doc offset
-    requestAnimationFrame(() => {
-      scrollState.current.locked = true;
-      scrollState.current.y = window.scrollY; // remember for unlock
-
-      // document.body.style.position = "fixed";
-      // document.body.style.top = `-${sectionTopDoc}px`; // NOTE: negative + px + DOC offset
-      // document.body.style.left = "0";
-      // document.body.style.right = "0";
-      // document.body.style.width = "100%";
-      // document.body.style.overflow = "hidden";
-    });
-  };
-
   useEffect(() => {
     setMounted(true);
     setIsMobile(window.innerWidth < 768);
@@ -92,20 +65,8 @@ const HeroSection = () => {
     if (headingRef.current) {
       gsap.fromTo(
         headingRef.current,
-        {
-          y: -50,
-          opacity: 0,
-          scale: 1,
-          duration: 1.2,
-          // ease: "back.out(1.5)",
-        },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 1.2,
-          // ease: "back.out(1.5)",
-        }
+        { y: -50, opacity: 0, scale: 1 },
+        { y: 0, opacity: 1, scale: 1, duration: 1.2 }
       );
     }
   }, []);
@@ -145,35 +106,49 @@ const HeroSection = () => {
     };
   }, []);
 
+  // SCROLLSMOOTHER + SCROLLTRIGGER PIN SETUP
   useEffect(() => {
-    if (!sectionRef.current) return;
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top top",
-        pin: true,
-        onEnter: () => {
-          if (!videoRef.current) return;
-          videoRef.current.style.display = "block";
-          document.querySelector("#smooth-content").style.overflow="hidden";
-  
-          videoRef.current.muted = true;
-          videoRef.current.setAttribute("muted", "");
-          videoRef.current.playsInline = true;
-          videoRef.current.setAttribute("playsinline", "");
-          videoRef.current.play?.().catch(() => {});
-        },
-      }
+    if (!sectionRef.current || videoCompleted) return;
+
+    const trigger = ScrollTrigger.create({
+      trigger: sectionRef.current,
+      start: "top top",
+      pin: true,
+      pinSpacing: false,
+      anticipatePin: 1,
+      id: "hero-pin",
+      scroller: "#smooth-wrapper", // CRITICAL
+      onEnter: () => {
+        if (!videoRef.current) return;
+
+        videoRef.current.style.display = "block";
+        const smoothContent = document.querySelector("#smooth-content");
+        if (smoothContent) smoothContent.style.overflow = "hidden";
+
+        videoRef.current.muted = true;
+        videoRef.current.playsInline = true;
+        videoRef.current.play?.().catch(() => {});
+      },
     });
-    introPinRef.current = tl.scrollTrigger;
+
+    introPinRef.current = trigger;
+
     return () => {
-      tl.scrollTrigger?.kill();
-      introPinRef.current?.kill();
-      // ScrollTrigger.refresh();
+      trigger.kill();
+      introPinRef.current = null;
     };
+  }, [videoCompleted]);
 
+  // RESIZE + REFRESH
+  useEffect(() => {
+    const handleResize = debounce(() => {
+      setIsMobile(window.innerWidth < 768);
+      ScrollTrigger.refresh();
+    }, 200);
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
-
 
   const openModal = (content) => {
     setModalContent(content);
@@ -231,19 +206,30 @@ const HeroSection = () => {
     []
   );
 
+  // FIXED: handleVideoEnd with ScrollSmoother
   const handleVideoEnd = () => {
-    // 1) restore scrolling
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
+    // Restore overflow
+    const smoothContent = document.querySelector("#smooth-content");
+    if (smoothContent) smoothContent.style.overflow = "";
 
-    // 2) unpin NOW
-    introPinRef.current?.kill();
-    introPinRef.current = null;
-    ScrollTrigger.refresh();
+    // Kill pin
+    if (introPinRef.current) {
+      introPinRef.current.disable();
+      introPinRef.current.kill();
+      introPinRef.current = null;
+    }
 
     setVideoCompleted(true);
+
     const tl = gsap.timeline({
-      onComplete: () => setSwiperReady(true),
+      onComplete: () => {
+        setSwiperReady(true);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            ScrollTrigger.refresh();
+          });
+        });
+      },
     });
 
     tl.to(videoRef.current, {
@@ -253,19 +239,6 @@ const HeroSection = () => {
       onComplete: () => {
         if (videoRef.current) {
           videoRef.current.style.display = "none";
-          setTimeout(() => {
-            const firstMedia = mediaRefs.current[0];
-            if (firstMedia && "play" in firstMedia) firstMedia.play();
-            mediaRefs.current.forEach((item) => {
-              if (
-                item &&
-                item.parentElement &&
-                item.parentElement.parentElement
-              ) {
-                item.parentElement.parentElement.style.opacity = 1;
-              }
-            });
-          }, 800);
         }
       },
     });
@@ -339,6 +312,18 @@ const HeroSection = () => {
       { height: "25px", opacity: 1, duration: 0.8, ease: "power2.in" },
       "-=0.6"
     );
+
+    setTimeout(() => {
+      const firstMedia = mediaRefs.current[0];
+      if (firstMedia && "play" in firstMedia) {
+        firstMedia.play().catch(() => {});
+      }
+      mediaRefs.current.forEach((item) => {
+        if (item?.parentElement?.parentElement) {
+          item.parentElement.parentElement.style.opacity = 1;
+        }
+      });
+    }, 300);
   };
 
   const handleSlideClick = useCallback((info, index, event) => {
@@ -349,9 +334,7 @@ const HeroSection = () => {
     }
 
     document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
-      if (slide) {
-        slide.classList.toggle("swiper-slide-active", i === index);
-      }
+      slide.classList.toggle("swiper-slide-active", i === index);
     });
 
     if (!info.name) return;
@@ -375,9 +358,7 @@ const HeroSection = () => {
         swiperInstance.current.slideTo(index);
       }
       document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
-        if (slide) {
-          slide.classList.toggle("swiper-slide-active", i === index);
-        }
+        slide.classList.toggle("swiper-slide-active", i === index);
       });
     }, 200),
     []
@@ -390,9 +371,7 @@ const HeroSection = () => {
         swiperInstance.current.slideTo(index);
       }
       document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
-        if (slide) {
-          slide.classList.toggle("swiper-slide-active", i === index);
-        }
+        slide.classList.toggle("swiper-slide-active", i === index);
       });
     }, 200),
     []
@@ -405,15 +384,12 @@ const HeroSection = () => {
         swiperInstance.current.slideTo(lastActiveIndex);
       }
       document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
-        if (slide) {
-          slide.classList.toggle("swiper-slide-active", i === lastActiveIndex);
-        }
+        slide.classList.toggle("swiper-slide-active", i === lastActiveIndex);
       });
     }, 200),
     [lastActiveIndex]
   );
 
-  // Throttled slide change handler
   const handleSlideChange = useCallback(
     debounce((swiper) => {
       const newIndex = swiper.realIndex;
@@ -424,20 +400,13 @@ const HeroSection = () => {
     []
   );
 
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkIsMobile();
-    // handleVideoEnd();
-    window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
-
   return (
-    <section className={`relative hero_section overflow-hidden mb-[100px] ${videoCompleted ? 'md:px-[50px]' : 'md:px-0'}`}>
-      {" "}
-      {/* md:px-[25px] px-[15px]*/}
+    <section
+      className={`relative hero_section overflow-hidden mb-[100px] ${
+        videoCompleted ? "md:px-[50px]" : "md:px-0"
+      }`}
+    >
+      {/* Dots */}
       <div className="right-[20px] bottom-[30px] md:block hidden absolute ml-auto">
         <div className="flex justify-end relative">
           {dotsConfig.map((dot, index) => {
@@ -470,6 +439,8 @@ const HeroSection = () => {
           <span className="font-medium"> Gurukul The Foundation</span>
         </p>
       </div>
+
+      {/* Decorative Lines */}
       <div
         ref={line1Ref}
         className="mix-blend-multiply h-[10px] md:block hidden md:h-[25px] w-[80%] absolute top-[calc(56%)] bg-gtf-pink opacity-0"
@@ -483,7 +454,8 @@ const HeroSection = () => {
         className="2xl:h-[450px] md:h-[300px] h-[300px] rotate-plus absolute rotation_circle 2xl:top-[40%] lg:top-[40%] bottom-[0] opacity-0 lg:left-[15%]"
         alt="Decorative circle"
       />
-      <div className="relative md:pt-[80px] z-[4] ">
+
+      <div className="relative md:pt-[80px] z-[4]">
         <div
           className={`flex justify-center ${
             videoCompleted ? "2xl:mb-10" : "2xl:mb-[150px]"
@@ -510,7 +482,6 @@ const HeroSection = () => {
                 ref={videoRef}
                 src="/assets/home/hero/main_video.mp4"
                 className="w-full h-full object-cover transition-opacity duration-500"
-                // autoPlay
                 playsInline
                 muted
                 onEnded={handleVideoEnd}
@@ -525,6 +496,7 @@ const HeroSection = () => {
           )}
 
           <div className="flex justify-between flex-wrap items-stretch pt-[80px]">
+            {/* Left Lines */}
             <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
               {HERO_DATA.map((_, index) => (
                 <span
@@ -536,6 +508,7 @@ const HeroSection = () => {
               ))}
             </div>
 
+            {/* Swiper */}
             <div
               className="md:basis-[40%] basis-[90%] m-auto md:h-[calc(100vh)] h-[calc(80vh-200px)] xl:pb-[150px] relative swiper_container"
               ref={containerRef}
@@ -603,40 +576,11 @@ const HeroSection = () => {
                   headingRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale3d(${scale}, ${scale}, 1)`;
                 }}
                 breakpoints={{
-                  320: {
-                    slidesPerView: 3,
-                    spaceBetween: 4,
-                    freeMode: {
-                      enabled: true,
-                      sticky: true,
-                      momentumBounce: false,
-                      momentumRatio: 0.5,
-                      momentumVelocityRatio: 0.5,
-                    },
-                  },
-                  600: {
-                    slidesPerView: 3,
-                    spaceBetween: 6,
-                    freeMode: {
-                      enabled: true,
-                      sticky: true,
-                      momentumBounce: false,
-                      momentumRatio: 0.5,
-                      momentumVelocityRatio: 0.5,
-                    },
-                  },
-                  768: {
-                    slidesPerView: 3,
-                    spaceBetween: 6,
-                  },
-                  1280: {
-                    slidesPerView: 3,
-                    spaceBetween: 6,
-                  },
-                  1320: {
-                    slidesPerView: 4,
-                    spaceBetween: 6,
-                  },
+                  320: { slidesPerView: 3, spaceBetween: 4 },
+                  600: { slidesPerView: 3, spaceBetween: 6 },
+                  768: { slidesPerView: 3, spaceBetween: 6 },
+                  1280: { slidesPerView: 3, spaceBetween: 6 },
+                  1320: { slidesPerView: 4, spaceBetween: 6 },
                 }}
               >
                 {HERO_DATA.map((info, index) => (
@@ -644,12 +588,8 @@ const HeroSection = () => {
                     key={`${info.id || info.name}-${index}`}
                     onMouseEnter={() => handleSlideHover(index)}
                     onMouseLeave={handleSlideMouseLeave}
-                    style={{
-                      transition: "opacity 0.4s ease-in-out",
-                    }}
-                    className={
-                      activeIndex === index ? "swiper-slide-active" : ""
-                    }
+                    style={{ transition: "opacity 0.4s ease-in-out" }}
+                    className={activeIndex === index ? "swiper-slide-active" : ""}
                   >
                     <figure
                       style={{ opacity: videoCompleted ? 1 : 0 }}
@@ -659,30 +599,16 @@ const HeroSection = () => {
                       <div className="overlay_container"></div>
                       <div className="bc_wrapper">
                         <div className="left">
-                          <div className="t">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
-                          <div className="b">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
+                          <div className="t"><div className="h"></div><div className="v"></div></div>
+                          <div className="b"><div className="h"></div><div className="v"></div></div>
                         </div>
                         <div className="right">
-                          <div className="t">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
-                          <div className="b">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
+                          <div className="t"><div className="h"></div><div className="v"></div></div>
+                          <div className="b"><div className="h"></div><div className="v"></div></div>
                         </div>
                       </div>
 
-                      {info.video ||
-                      info.img.endsWith(".mp4") ||
-                      info.img.endsWith(".webm") ? (
+                      {info.video || info.img.endsWith(".mp4") || info.img.endsWith(".webm") ? (
                         <video
                           ref={(el) => (mediaRefs.current[index] = el)}
                           src={`/assets/home/hero/${info.video || info.img}`}
@@ -716,6 +642,8 @@ const HeroSection = () => {
                 ))}
               </Swiper>
             </div>
+
+            {/* Right Text List */}
             <div className="flex-[1] z-[7] flex flex-col md:block hidden relative justify-between h-[100%] translate-x-[200%] option_listing mb-[auto] 2xl:mt-[80px] text-right">
               <ul className="w-auto inline-block">
                 {HERO_DATA.map((info, index) => (
@@ -735,7 +663,9 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-      <button className="bg-[#1E251F] md:hidden block flex gap-[5px] font-[700] relative z-[999] justify-center mt-[15px] place-items-center text-white px-4 py-[2px] font-[500] w-[calc(100%-74px)]  font-[oswald] m-auto before:content-[''] before:absolute before:h-[166px] before:w-[100%] before:bottom-[148px] before:bg-[transparent] ">
+
+      {/* Mobile CTA */}
+      <button className="bg-[#1E251F] md:hidden block flex gap-[5px] font-[700] relative z-[999] justify-center mt-[15px] place-items-center text-white px-4 py-[2px] font-[500] w-[calc(100%-74px)] font-[oswald] m-auto before:content-[''] before:absolute before:h-[166px] before:w-[100%] before:bottom-[148px] before:bg-[transparent]">
         MEET NOW
         <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
           <path
@@ -744,11 +674,15 @@ const HeroSection = () => {
           />
         </svg>
       </button>
+
+      {/* Mobile Lines */}
       <div className="lines absolute right-[0] bottom-[26%] md:hidden block">
         <div className="mix-blend-multiply h-[6px] w-[40px] bg-gtf-pink"></div>
         <div className="mix-blend-multiply my-[4px] h-[6px] w-[40px] bg-gtf-yellow"></div>
         <div className="mix-blend-multiply h-[6px] w-[40px] bg-gtf-blue"></div>
       </div>
+
+      {/* Modal */}
       {mounted &&
         modalOpen &&
         modalContent &&
@@ -789,18 +723,8 @@ const HeroSection = () => {
                 onClick={closeModal}
                 className="absolute md:top-[10px] top-[8px] md:right-4 right-[36px] z-50 bg-white/90 hover:bg-white rounded-full p-2 transition-all duration-200"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
               <div className="before_line absolute top-[0] md:left-[140px] left-[25px] h-full w-[2px] border-s-[1px] border-dashed border-[#000]"></div>
@@ -812,7 +736,7 @@ const HeroSection = () => {
                   {modalContent.title}
                 </h2>
                 <div className="border-[#000] pt-[20px]">
-                  <h4 className="font-[700]   font-[oswald]  uppercase tracking-[-1px]  mb-[18px] text-[20px]">
+                  <h4 className="font-[700] font-[oswald] uppercase tracking-[-1px] mb-[18px] text-[20px]">
                     Project one
                   </h4>
                   <p className="mb-3">{modalContent.text}</p>
@@ -825,7 +749,9 @@ const HeroSection = () => {
           </div>,
           document.body
         )}
-      <div className="">
+
+      {/* Bottom Line */}
+      <div>
         <div
           ref={line3Ref}
           className="w-[calc(35%)] m-auto h-[2px] md:block hidden z-[99] relative bg-gtf-blue opacity-1"
