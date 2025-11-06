@@ -159,7 +159,7 @@ const WhoWeAre = () => {
         duration: 12, 
         onUpdate: function () {
           images.forEach((image, index) => {
-            if (animatedIndices.includes(index)) return;s
+            if (animatedIndices.includes(index)) return;
             const rect = image.getBoundingClientRect();
             if (rect.right > 0 && rect.left < window.innerWidth) {
               gsap.to(image, {
