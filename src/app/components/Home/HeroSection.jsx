@@ -146,11 +146,14 @@ const HeroSection = () => {
   }, []);
 
   useEffect(() => {
-    if (!sectionRef.current) return;
+    if (!sectionRef.current || !mounted) return;
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
         start: "top top",
+        anticipatePin: 1,
+        pinSpacing: true,
         pin: true,
         onEnter: () => {
           if (!videoRef.current) return;
@@ -172,7 +175,7 @@ const HeroSection = () => {
       // ScrollTrigger.refresh();
     };
 
-  }, []);
+  }, [mounted, videoCompleted, isMobile]);
 
 
   const openModal = (content) => {
@@ -242,7 +245,12 @@ const handleVideoEnd = () => {
 
   const tl = gsap.timeline({
     defaults: { ease: "power2.out" },
-    onComplete: () => setSwiperReady(true),
+    onComplete: () => {
+      setSwiperReady(true);
+      gsap.delayedCall(0.1, () => {
+        ScrollTrigger.refresh();
+      });
+    },
   });
 
   tl.to(videoRef.current, {
