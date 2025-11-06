@@ -207,7 +207,7 @@ const WhoWeAre = () => {
       <div ref={containerRef} className="pin-container">
         <section className="flex flex-row  uppercase h-screen  main-container-scroll no-scrollbar min-w-[430vw] relative">
           <div
-            ref={sectionRef}
+            ref={sectionRef} 
             className="main-container-scroll  no-scrollbar flex h-screen will-change-transform"
             style={{
               display: "flex",

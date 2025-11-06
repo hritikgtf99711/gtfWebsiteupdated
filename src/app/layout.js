@@ -14,6 +14,7 @@ export default function RootLayout({ children }) {
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
       smooth: 2,
+      normalizeScroll:true
     });
 
     
