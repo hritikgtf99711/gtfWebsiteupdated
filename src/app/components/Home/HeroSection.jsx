@@ -240,7 +240,9 @@ const handleVideoEnd = () => {
 
   introPinRef.current?.kill();
   introPinRef.current = null;
+  document.querySelector('.hide_screen').style.display='none'
 
+  document.querySelector(".slider_content").style.display='flex'
   setVideoCompleted(true);
 
   const tl = gsap.timeline({
@@ -474,8 +476,8 @@ const handleVideoEnd = () => {
             </span>
           </h1>
         </div>
-
-        <div ref={sectionRef} >
+          
+        <div ref={sectionRef} className="h-screen hide_screen" >
           {mounted && !videoCompleted && (
             <div className="video_container !absolute top-0 left-0 w-full h-screen z-[9999]">
               <video
@@ -495,8 +497,8 @@ const handleVideoEnd = () => {
               </button>
             </div>
           )}
-
-          <div className="flex justify-between flex-wrap items-stretch pt-[80px]">
+        </div>
+        <div className="flex hidden  slider_content justify-between flex-wrap items-stretch pt-[80px]">
             <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
               {HERO_DATA.map((_, index) => (
                 <span
@@ -705,7 +707,6 @@ const handleVideoEnd = () => {
               </ul>
             </div>
           </div>
-        </div>
       </div>
       <button className="bg-[#1E251F] md:hidden block flex gap-[5px] font-[700] relative z-[999] justify-center mt-[15px] place-items-center text-white px-4 py-[2px] font-[500] w-[calc(100%-74px)]  font-[oswald] m-auto before:content-[''] before:absolute before:h-[166px] before:w-[100%] before:bottom-[148px] before:bg-[transparent] ">
         MEET NOW

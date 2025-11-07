@@ -57,16 +57,16 @@ export default function MainLoader() {
     tlRef.current = tl;
 
     // fade out loader animation
-    // const hideTimeout = setTimeout(()=>{
-    //   gsap.to(loaderRef.current, {
-    //     opacity:0,
-    //     duration:0.5,
-    //     ease:'power2.inOut',
-    //     onComplete:()=>{
-    //       gsap.set(loaderRef.current, {display:'none'}) // remove loader after finish fade effect
-    //     }
-    //   })
-    // }, 4000)  
+    const hideTimeout = setTimeout(()=>{
+      gsap.to(loaderRef.current, {
+        opacity:0,
+        duration:0.5,
+        ease:'power2.inOut',
+        onComplete:()=>{
+          gsap.set(loaderRef.current, {display:'none'}) // remove loader after finish fade effect
+        }
+      })
+    }, 5000)  
 
 
     return () => {

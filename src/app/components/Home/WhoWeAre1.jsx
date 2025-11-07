@@ -104,156 +104,106 @@ const WhoWeAre = () => {
   const sectionRef = useRef(null);
   const containerRef = useRef(null);
   const imagesRef = useRef([]);
-  const headingRef = useRef(null);
-  const overviewData = useRef(null);
-  const backgroundColorRef = useRef(null);
 
   useEffect(() => {
+    const section = sectionRef.current;
+    const container = containerRef.current;
+    const images = imagesRef.current;
 
-    const ctx = gsap.context(() => {
-      const section = sectionRef.current;
-      const container = containerRef.current;
-      const images = imagesRef.current;
-      const ov_data = overviewData.current;
-      const bgColorRef = backgroundColorRef.current;
-      
-      const otherText = section.querySelector(".other_txt");
+    if (!section || !container || !images) return;
 
-      if (!section || !container || !images) return;
+    const scrollWidth = section.scrollWidth;
+    const windowWidth = window.innerWidth;
+    const maxTranslateX = scrollWidth - windowWidth;
 
-      // Initial states for animations
+    gsap.set(images, {
+      opacity: 0,
+      y: 50,
+      clipPath: "inset(50% 0 50% 0)",
+    });
 
-      const hides = section.querySelectorAll(".hide");
-      const scrollWidth = section.scrollWidth;
-      const windowWidth = window.innerWidth;
-      const maxTranslateX = scrollWidth - windowWidth;
-      const heading = headingRef.current;
+    const animatedIndices = [];
 
-      gsap.set(hides, { display: "inline-block", marginRight: "30px" });
-      gsap.set(otherText, { width: 0, opacity: 0, display: "inline-block" });
-      gsap.set(images, {opacity: 0, y: 50, clipPath: "inset(50% 0 50% 0)",});
-      
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        id: "whoWeAreTrigger",
+        trigger: container,
+        start: "top top",
+        end: () => `+=2000`,
+        pin: true,
+        markers:true,
+        scrub: 1,
+        pinSpacing: true,
+      },  
+    });
 
-      const splitInstances = textRef.current
-        .filter(Boolean)
-        .map((ref) => new SplitText(ref, { type: "chars" }));
-      const allChars = splitInstances.flatMap((split) => split.chars);
+    const splitInstances = textRef.current
+      .filter(Boolean)
+      .map((ref) => new SplitText(ref, { type: "chars" }));
+    const allChars = splitInstances.flatMap((split) => split.chars);
 
-      
-      gsap.set(allChars, {opacity:0});
-      gsap.set(ov_data, {height:0});
-      
-
-      const animatedIndices = [];
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          id: "whoWeAreTrigger",
-          trigger: container,
-          start: "top top",
-          end: () => `+=${maxTranslateX * 8 + 100}`,
-          pin: true,
-          markers:true,
-          scrub: 1,
-          pinSpacing: true,
-        },  
-      });
-
-      tl.to(hides, {
-        autoAlpha:0,
-        duration:2,
-        stagger:0.05,
-        ease:"power2"
-      }, "+=0.5").
-      to(hides, {
-        width: 0,
-        marginRight:0,
-        duration: 2,
-        ease:"power2"
-      },  "+=1").
-      to(otherText, { marginLeft:'25px', opacity: 1, width: "auto", duration: 2 }, "+=1").
-      // to(allChars, {display:'inline-block', duration:5, ease:"power2"}, "+=4").
-      to(ov_data, {height:'auto', duration:2, ease:"power2"}, "+=1").
-      to(heading, {left:0, transform:"unset", lineHeight:'70px', fontSize:'60px', duration:2, ease:"power2"}, "+=1.5").
-      to(heading, {autoAlpha:0, duration:0.5, ease:"power2"}).
-      to(allChars, {opacity:0.2, duration:0.5, ease:"power2"}, "-=1").
-      to(allChars, {opacity: 1,scale: 1, scrub: 0.22, stagger: 0.08, ease: "none"}, "+=0.5")
-      .to(
-        section,
-        {
-          x: -maxTranslateX,
-          ease: "power1.out",
-          duration: 12, 
-          onUpdate: function () {
-            images.forEach((image, index) => {
-              if (animatedIndices.includes(index)) return;
-              const rect = image.getBoundingClientRect();
-              if (rect.right > 0 && rect.left < window.innerWidth) {
-                gsap.to(image, {
-                  opacity: 1,
-                  y: 0,
-                  clipPath: "inset(0% 0 0% 0)",
-                  duration: 2,
-                  delay: 0.3,
-                  ease: "power3.out",
-                  overwrite: true,
-                  onStart: () => {
-                    gsap.set(image, {
-                      y: -200,
-                      clipPath: "polygon(54% 100%, 0% 100%, 100% 100%)",
-                    });
-                  },
-                });
-                animatedIndices.push(index);
-              }
-            });
-          },
-          onComplete: () => ScrollTrigger.refresh(),
+    tl.fromTo(
+      allChars,
+      { opacity: 0.2, scale: 0.95 },
+      {
+        opacity: 1,
+        scale: 1,
+        scrub: 0.22,
+        stagger: 0.08,
+        ease: "none",
+      }
+    ).to(
+      section,
+      {
+        x: -maxTranslateX,
+        ease: "power1.out",
+        duration: 12, 
+        onUpdate: function () {
+          images.forEach((image, index) => {
+            if (animatedIndices.includes(index)) return;
+            const rect = image.getBoundingClientRect();
+            if (rect.right > 0 && rect.left < window.innerWidth) {
+              gsap.to(image, {
+                opacity: 1,
+                y: 0,
+                clipPath: "inset(0% 0 0% 0)",
+                duration: 2,
+                delay: 0.3,
+                ease: "power3.out",
+                overwrite: true,
+                onStart: () => {
+                  gsap.set(image, {
+                    y: -200,
+                    clipPath: "polygon(54% 100%, 0% 100%, 100% 100%)",
+                  });
+                },
+              });
+              animatedIndices.push(index);
+            }
+          });
         },
-        "-=1.5"
-      );
-
-      gsap.to("body", {
-
-        scrollTrigger: {
-          trigger: bgColorRef,
-          start: "top 50%", // Trigger when bgColorRef reaches 50% of the viewport height
-          end: "bottom top",
-          scrub: true, // Smooth transition while scrolling
-          markers: true, // Set to false when you're ready to go live
-          onEnter: () => {
-            document.querySelector('body').style.backgroundColor='#d93f92'
-          },
-          onLeave: () => {
-            // Optional: Revert the color if needed
-            gsap.to("body", { backgroundColor: "transparent" });
-          },
-        },
-      });
-
-      ScrollTrigger.refresh();
-    }, containerRef);
-
-
-    return () => ctx.revert();
+        onComplete: () => ScrollTrigger.refresh(),
+      },
+      "-=1.5"
+    );
     
     // Cleanup function
-    // return () => {
-    //   ScrollTrigger.refresh();
-    //   const mainTrigger = ScrollTrigger.getById("whoWeAreTrigger");
-    //   mainTrigger?.kill();
-    //   tl.kill();
-    //   splitInstances.forEach((split) => split.revert());
-    //   ScrollTrigger.refresh();
-    //   images.forEach((image) => {
-    //     if (image.parentNode) image.parentNode.style.overflow = "";
-    //   });
-    // };
+    return () => {
+      ScrollTrigger.refresh();
+      const mainTrigger = ScrollTrigger.getById("whoWeAreTrigger");
+      mainTrigger?.kill();
+      tl.kill();
+      splitInstances.forEach((split) => split.revert());
+      ScrollTrigger.refresh();
+      images.forEach((image) => {
+        if (image.parentNode) image.parentNode.style.overflow = "";
+      });
+    };
   }, []); 
 
   
   return (
-    <section className="w-full relative  mix-blend-multiply overflow-hidden">
+    <section className="w-full  mix-blend-multiply overflow-hidden">
       <div ref={containerRef} className="pin-container">
         <section className="flex flex-row  uppercase h-screen  main-container-scroll no-scrollbar min-w-[430vw] relative">
           <div
@@ -269,24 +219,19 @@ const WhoWeAre = () => {
             <div className="flex flex-row bg-gtf-pink justify-between h-full  min-w-[100vw]">
               <div className="grid grid-cols-12 items-center  gap-[40px]">
                 <div className="w-[100vw]  col-span-12 pt-[20px] px-[35PX]">
-                  <h2 className="mb-[50px] text-center bartino-outline tracking-[2px] 2xl:text-[50px] lg:text-[62px] md:text-[50px] text-[32px] block">
+                  <h2 className="font-[Oswald] mb-[15px] text-[25px] text-left">
                     Who We Are?
                   </h2>
-                  <div className="relative">
-
-                  <h4 ref={headingRef} className="font-[Oswald] js-title text-center text-[70px] font-bold absolute left-[50%] -translate-x-[50%] w-[max-content]">G<span className="hide">urukul </span>T<span className="hide">he </span>F<span className="hide" >oundation </span><span className="other_txt">Technologies</span></h4>
-
-                  <div ref={overviewData}>
-                  {words.map((word, index) => (
-                    <p
-                      ref={(el) => (textRef.current[index] = el)}
-                      key={index}
-                      className="font-[Oswald] pr-[8px] 2xl:leading-[1.2] lg:leading-[1.4] tracking-[-2.5px] font-[700] 2xl:text-[60px] xl:text-[48px] text-[32px] inline-block"
-                    >
-                      {word}
-                    </p>
-                  ))}
-                  </div>
+                  <div className="">
+                    {words.map((word, index) => (
+                      <p
+                        ref={(el) => (textRef.current[index] = el)}
+                        key={index}
+                        className="font-[Oswald] pr-[8px] 2xl:leading-[1.2] lg:leading-[1.4] tracking-[-2.5px] font-[700] 2xl:text-[60px] xl:text-[48px] text-[32px] inline-block"
+                      >
+                        {word}
+                      </p>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -362,7 +307,6 @@ const WhoWeAre = () => {
           </div>
         </section>
       </div>
-      <div  ref={backgroundColorRef} className="absolute top-0 left-0 w-full h-full"></div>
     </section>
   );
 };

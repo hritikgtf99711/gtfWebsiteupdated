@@ -10,8 +10,7 @@ const Line = forwardRef(
       right = "right-[15%]",
       bottom = "bottom-0",
       callVia,
-      height="h-[20px]"
-
+      height = "h-[20px]",
     },
     ref
   ) => {
@@ -34,13 +33,11 @@ const Line = forwardRef(
 
       return () => observer.disconnect();
     }, [elementRef]);
-  useEffect(()=>{
-    if(callVia){
-      setIsVisible(true)
-
-    }
-
-  },[callVia])
+    useEffect(() => {
+      if (callVia) {
+        setIsVisible(true);
+      }
+    }, [callVia]);
     return (
       <div
         ref={elementRef}

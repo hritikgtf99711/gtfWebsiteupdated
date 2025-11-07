@@ -21,8 +21,8 @@ export default function RootLayout({ children }) {
     const smoother = ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
-      smooth: 2,
-      normalizeScroll:true
+      smooth: 3,
+      normalizeScroll:false
     });
 
     
@@ -33,7 +33,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-      <MainLoader />
+      {/* <MainLoader /> */}
         <div id="smooth-wrapper">
           <div id="smooth-content">
           {isHome && <Header />}
