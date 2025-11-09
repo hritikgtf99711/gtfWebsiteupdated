@@ -33,7 +33,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-      {/* <MainLoader /> */}
+      <MainLoader />
         <div id="smooth-wrapper">
           <div id="smooth-content">
           {isHome && <Header />}

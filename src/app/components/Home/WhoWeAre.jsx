@@ -213,23 +213,24 @@ const WhoWeAre = () => {
         "-=1.5"
       );
 
-      gsap.to("body", {
+      // gsap.to("body", {
 
-        scrollTrigger: {
-          trigger: bgColorRef,
-          start: "top 50%", // Trigger when bgColorRef reaches 50% of the viewport height
-          end: "bottom top",
-          scrub: true, // Smooth transition while scrolling
-          markers: true, // Set to false when you're ready to go live
-          onEnter: () => {
-            document.querySelector('body').style.backgroundColor='#d93f92'
-          },
-          onLeave: () => {
-            // Optional: Revert the color if needed
-            gsap.to("body", { backgroundColor: "transparent" });
-          },
-        },
-      });
+      //   scrollTrigger: {
+      //     trigger: bgColorRef,
+      //     start: "top 50%", // Trigger when bgColorRef reaches 50% of the viewport height
+      //     end: "bottom top",
+      //     scrub: true, // Smooth transition while scrolling
+      //     markers: true, // Set to false when you're ready to go live
+      //     onEnter: () => {
+      //       document.querySelector('body').style.backgroundColor='#d93f92',
+      //       document.querySelector('body').style.trasition = '0.4s all'
+      //     },
+      //     onLeave: () => {
+      //       // Optional: Revert the color if needed
+      //       gsap.to("body", { backgroundColor: "transparent" });
+      //     },
+      //   },
+      // });
 
       ScrollTrigger.refresh();
     }, containerRef);

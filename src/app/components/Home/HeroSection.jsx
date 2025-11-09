@@ -155,17 +155,17 @@ const HeroSection = () => {
         anticipatePin: 1,
         pinSpacing: true,
         pin: true,
-        onEnter: () => {
-          if (!videoRef.current) return;
-          videoRef.current.style.display = "block";
-          document.querySelector("#smooth-content").style.overflow="hidden";
+        // onEnter: () => {
+        //   if (!videoRef.current) return;
+        //   videoRef.current.style.display = "block";
+        //   document.querySelector("#smooth-content").style.overflow="hidden";
   
-          videoRef.current.muted = true;
-          videoRef.current.setAttribute("muted", "");
-          videoRef.current.playsInline = true;
-          videoRef.current.setAttribute("playsinline", "");
-          videoRef.current.play?.().catch(() => {});
-        },
+        //   videoRef.current.muted = true;
+        //   videoRef.current.setAttribute("muted", "");
+        //   videoRef.current.playsInline = true;
+        //   videoRef.current.setAttribute("playsinline", "");
+        //   videoRef.current.play?.().catch(() => {});
+        // },
       }
     });
     introPinRef.current = tl.scrollTrigger;
@@ -457,10 +457,10 @@ const handleVideoEnd = () => {
         className="2xl:h-[450px] md:h-[300px] h-[300px] rotate-plus absolute rotation_circle 2xl:top-[40%] lg:top-[40%] bottom-[0] opacity-0 lg:left-[15%]"
         alt="Decorative circle"
       />
-      <div className="relative md:pt-[80px] z-[4] ">
+      <div className="relative md:pt-[30px] z-[4]">
         <div
           className={`flex justify-center ${
-            videoCompleted ? "2xl:mb-10" : "2xl:mb-[150px]"
+            videoCompleted ? "2xl:mb-[20px]" : "2xl:mb-[80px]"
           } mb-8 heading-container`}
           ref={headingRef}
           style={{ opacity: 0, transition: "transform 0.3s ease-out" }}
@@ -484,7 +484,7 @@ const handleVideoEnd = () => {
                 ref={videoRef}
                 src="/assets/home/hero/main_video.mp4"
                 className="w-full h-full object-cover transition-opacity duration-500"
-                // autoPlay
+                autoPlay
                 playsInline
                 muted
                 onEnded={handleVideoEnd}
@@ -498,7 +498,7 @@ const handleVideoEnd = () => {
             </div>
           )}
         </div>
-        <div className="flex hidden  slider_content justify-between flex-wrap items-stretch pt-[80px]">
+        <div className="flex hidden overflow-hidden slider_content justify-between flex-wrap items-stretch pt-[80px]  2xl:h-[calc(100vh-300px)] lg:h-[calc(100vh-200px)]">
             <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
               {HERO_DATA.map((_, index) => (
                 <span
@@ -574,7 +574,7 @@ const handleVideoEnd = () => {
                   const scale = isMobile
                     ? 1 - 0.008 * slideProgress
                     : 1 - 0.015 * slideProgress;
-                  headingRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale3d(${scale}, ${scale}, 1)`;
+                  // headingRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale3d(${scale}, ${scale}, 1)`;
                 }}
                 breakpoints={{
                   320: {
