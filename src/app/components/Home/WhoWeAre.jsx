@@ -161,29 +161,29 @@ const WhoWeAre = () => {
 
       tl.to(hides, {
         autoAlpha:0,
-        duration:2,
+        duration:0.2,
         stagger:0.05,
         ease:"power2"
       }, "+=0.5").
       to(hides, {
         width: 0,
         marginRight:0,
-        duration: 2,
+        duration: 0.3,
         ease:"power2"
-      },  "+=1").
-      to(otherText, { marginLeft:'25px', opacity: 1, width: "auto", duration: 2 }, "+=1").
+      },  "+=0.2").
+      to(otherText, { marginLeft:'25px', opacity: 1, width: "auto", duration: 0.2 }, "+=0.5").
       // to(allChars, {display:'inline-block', duration:5, ease:"power2"}, "+=4").
-      to(ov_data, {height:'auto', duration:2, ease:"power2"}, "+=1").
-      to(heading, {left:0, transform:"unset", lineHeight:'70px', fontSize:'60px', duration:2, ease:"power2"}, "+=1.5").
-      to(heading, {autoAlpha:0, duration:0.5, ease:"power2"}).
-      to(allChars, {opacity:0.2, duration:0.5, ease:"power2"}, "-=1").
-      to(allChars, {opacity: 1,scale: 1, scrub: 0.22, stagger: 0.08, ease: "none"}, "+=0.5")
+      to(ov_data, {height:'auto', duration:0.2, ease:"power2"}, "+=0.3").
+      to(heading, {left:0, transform:"unset", lineHeight:'70px', fontSize:'60px', duration:0.2, ease:"power2"}, "+=0.5").
+      to(heading, {autoAlpha:0, duration:0.2, ease:"power2"}).
+      to(allChars, {opacity:0.2, duration:0.2, ease:"power2"}, "-=0.3").
+      to(allChars, {opacity: 1,scale: 1, scrub: 0.5, stagger: 0.08, ease: "none"}, "+=0.5")
       .to(
         section,
         {
           x: -maxTranslateX,
           ease: "power1.out",
-          duration: 12, 
+          duration: 6, 
           onUpdate: function () {
             images.forEach((image, index) => {
               if (animatedIndices.includes(index)) return;

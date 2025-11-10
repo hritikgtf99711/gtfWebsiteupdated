@@ -20,7 +20,6 @@ const Home = () => {
       <Clients />
       <Solutions />
       <Contact />
-      <div className="h-[200vh]"></div>
     </div>
   );
 };

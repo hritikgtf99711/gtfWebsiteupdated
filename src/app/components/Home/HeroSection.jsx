@@ -51,7 +51,8 @@ const HeroSection = () => {
   const scrollState = useRef({ locked: false, y: 0 });
   const introPinRef = useRef(null);
   const marqueeRef = useRef(null);
-  
+  const skipBtnRef = useRef(null);
+  const headerBounds = useRef({ top: 0, bottom: 0, isInside: false });
 
   const dotsConfig = [
     { top: "29%", left: "65%", color: "bg-gtf-blue" },
@@ -161,14 +162,14 @@ const HeroSection = () => {
         //   if (!videoRef.current) return;
         //   videoRef.current.style.display = "block";
         //   document.querySelector("#smooth-content").style.overflow="hidden";
-  
+
         //   videoRef.current.muted = true;
         //   videoRef.current.setAttribute("muted", "");
         //   videoRef.current.playsInline = true;
         //   videoRef.current.setAttribute("playsinline", "");
         //   videoRef.current.play?.().catch(() => {});
         // },
-      }
+      },
     });
     introPinRef.current = tl.scrollTrigger;
     return () => {
@@ -176,9 +177,7 @@ const HeroSection = () => {
       introPinRef.current?.kill();
       // ScrollTrigger.refresh();
     };
-
   }, [mounted, videoCompleted, isMobile]);
-
 
   const openModal = (content) => {
     setModalContent(content);
@@ -242,9 +241,9 @@ const HeroSection = () => {
 
     introPinRef.current?.kill();
     introPinRef.current = null;
-    document.querySelector('.hide_screen').style.display='none'
+    document.querySelector(".hide_screen").style.display = "none";
 
-    document.querySelector(".slider_content").style.display='flex'
+    document.querySelector(".slider_content").style.display = "flex";
     setVideoCompleted(true);
 
     const tl = gsap.timeline({
@@ -262,12 +261,12 @@ const HeroSection = () => {
       duration: 0.5,
       onComplete: () => {
         if (videoRef.current) {
-          gsap.set([videoRef.current, '.video_container'], { display: "none" });
-          
+          gsap.set([videoRef.current, ".video_container"], { display: "none" });
+
           gsap.delayedCall(0.8, () => {
             const firstMedia = mediaRefs.current[0];
             if (firstMedia && "play" in firstMedia) firstMedia.play();
-            
+
             mediaRefs.current.forEach((item) => {
               const parentContainer = item?.parentElement?.parentElement;
               if (parentContainer) gsap.set(parentContainer, { opacity: 1 });
@@ -277,43 +276,65 @@ const HeroSection = () => {
       },
     });
 
-    tl.to(".swiper-slide:first-child", {
-      opacity: 1,
-      scale: 1,
-      duration: 1.2,
-      ease: "expo.out",
-    }, "-=0.3");
+    tl.to(
+      ".swiper-slide:first-child",
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 1.2,
+        ease: "expo.out",
+      },
+      "-=0.3"
+    );
 
-    tl.fromTo(".option_listing",
+    tl.fromTo(
+      ".option_listing",
       { x: -50, opacity: 0, scale: 0.9 },
       { x: 0, opacity: 1, scale: 1, duration: 1, ease: "power3.out" },
       "-=0.6"
     );
 
-    tl.fromTo(".right_line",
+    tl.fromTo(
+      ".right_line",
       { x: 100, opacity: 0 },
       { x: 0, opacity: 1, duration: 1.2, ease: "power3.out" },
       "-=0.8"
     );
 
-    tl.fromTo(".rotation_circle",
+    tl.fromTo(
+      ".rotation_circle",
       { opacity: 0, scale: 0.8, rotate: -30 },
       { opacity: 1, scale: 1, rotate: 0, duration: 1.2, ease: "back.out(2)" },
       "-=0.7"
     );
 
-    tl.fromTo(line1Ref.current,
+    tl.fromTo(
+      line1Ref.current,
       { width: "0%", opacity: 0, left: "17%" },
-      { width: "25%", opacity: 1, left: "20%", duration: 0.8, ease: "power2.in" }
+      {
+        width: "25%",
+        opacity: 1,
+        left: "20%",
+        duration: 0.8,
+        ease: "power2.in",
+      }
     );
 
-    tl.fromTo(line2Ref.current,
+    tl.fromTo(
+      line2Ref.current,
       { width: "0%", opacity: 0, right: "25%" },
-      { width: "24%", opacity: 1, right: "20%", duration: 0.8, ease: "power2.in" },
+      {
+        width: "24%",
+        opacity: 1,
+        right: "20%",
+        duration: 0.8,
+        ease: "power2.in",
+      },
       "-=0.6"
     );
 
-    tl.fromTo(line3Ref.current,
+    tl.fromTo(
+      line3Ref.current,
       { height: "0%", opacity: 0 },
       { height: "25px", opacity: 1, duration: 0.8, ease: "power2.in" },
       "-=0.6"
@@ -329,7 +350,7 @@ const HeroSection = () => {
 
     document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
       if (slide) {
-        slide.classList.toggle("swiper-slide-active", i === index);
+        slide.className.toggle("swiper-slide-active", i === index);
       }
     });
 
@@ -355,7 +376,7 @@ const HeroSection = () => {
       }
       document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
         if (slide) {
-          slide.classList.toggle("swiper-slide-active", i === index);
+          slide.className.toggle("swiper-slide-active", i === index);
         }
       });
     }, 200),
@@ -370,7 +391,7 @@ const HeroSection = () => {
       }
       document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
         if (slide) {
-          slide.classList.toggle("swiper-slide-active", i === index);
+          slide.className.toggle("swiper-slide-active", i === index);
         }
       });
     }, 200),
@@ -385,7 +406,7 @@ const HeroSection = () => {
       }
       document.querySelectorAll(".swiper-slide").forEach((slide, i) => {
         if (slide) {
-          slide.classList.toggle("swiper-slide-active", i === lastActiveIndex);
+          slide.className.toggle("swiper-slide-active", i === lastActiveIndex);
         }
       });
     }, 200),
@@ -414,28 +435,115 @@ const HeroSection = () => {
   }, []);
 
   // infinite marquee
-  useEffect(()=>{
-    if(!marqueeRef.current) return;
+  useEffect(() => {
+    if (!marqueeRef.current) return;
 
     const el = marqueeRef.current;
     const distance = el.offsetWidth / 2;
 
-    const tl = gsap.timeline({repeat:-1, defaults:{ease:'none'}});
-    
-    tl.fromTo(
-      el,
-      {x:-distance},
-      {x:0, duration:100}
-    );
+    const tl = gsap.timeline({ repeat: -1, defaults: { ease: "none" } });
+
+    tl.fromTo(el, { x: -distance }, { x: 0, duration: 100 });
 
     // seamless loop: when the first half disappears, jump back instantly
-    tl.set(el, {x:0});
+    tl.set(el, { x: 0 });
 
-    return()=>tl.kill();
-  }, [])
+    return () => tl.kill();
+  }, []);
+
+  useEffect(() => {
+    if (!skipBtnRef.current || videoCompleted) return;
+
+    const btn = skipBtnRef.current;
+    const header = document.querySelector(".site-header");
+
+    if (!header) return;
+
+    let xTo, yTo;
+    const speed = 1;
+
+    // Create smooth follow functions
+    const followCursor = () => {
+      xTo = gsap.quickTo(btn, "x", { duration: speed, ease: "power3.out" });
+      yTo = gsap.quickTo(btn, "y", { duration: speed, ease: "power3.out" });
+    };
+
+    followCursor();
+
+    const updateBounds = () => {
+      const rect = header.getBoundingClientRect();
+      headerBounds.current.top = rect.top + window.scrollY;
+      headerBounds.current.bottom = rect.bottom + window.scrollY;
+    };
+
+    updateBounds();
+    window.addEventListener("resize", updateBounds);
+    window.addEventListener("scroll", updateBounds);
+
+    const handleMove = (e) => {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const rect = btn.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      xTo(clientX - centerX);
+      yTo(clientY - centerY);
+
+      // Check if inside header
+      const isInside =
+        clientY >= headerBounds.current.top &&
+        clientY <= headerBounds.current.bottom;
+
+      if (isInside && !headerBounds.current.isInside) {
+        headerBounds.current.isInside = true;
+        gsap.to(btn, {
+          opacity: 0,
+          scale: 0.5,
+          y: -20,
+          duration: 0.35,
+          ease: "power3",
+        });
+      } else if (!isInside && headerBounds.current.isInside) {
+        // LEAVE header
+        headerBounds.current.isInside = false;
+        gsap.to(btn, {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.45,
+          ease: "power3",
+        });
+      }
+    };
+
+    // Mouse & touch support
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("touchmove", handleMove);
+
+    // Optional: subtle scale on hover
+    const handleEnter = () => gsap.to(btn, { scale: 1.15, duration: 0.3 });
+    const handleLeave = () => gsap.to(btn, { scale: 1, duration: 0.3 });
+
+    btn.addEventListener("mouseenter", handleEnter);
+    btn.addEventListener("mouseleave", handleLeave);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("touchmove", handleMove);
+
+      btn.removeEventListener("mouseenter", handleEnter);
+      btn.removeEventListener("mouseleave", handleLeave);
+    };
+  }, []);
 
   return (
-    <section className={`relative hero_section overflow-hidden mb-[100px] ${videoCompleted ? 'md:px-[50px]' : 'md:px-0'}`}>
+    <section
+      className={`relative hero_section overflow-hidden mb-[100px] ${
+        videoCompleted ? "md:px-[50px]" : "md:px-0"
+      }`}
+    >
       <div className="right-[20px] bottom-[30px] md:block hidden absolute ml-auto">
         <div className="flex justify-end relative">
           {dotsConfig.map((dot, index) => {
@@ -481,7 +589,59 @@ const HeroSection = () => {
         className="2xl:h-[450px] md:h-[300px] h-[300px] rotate-plus absolute rotation_circle 2xl:top-[40%] lg:top-[40%] bottom-[0] opacity-0 lg:left-[15%]"
         alt="Decorative circle"
       />
-      <div className="relative md:pt-[30px] z-[4]">
+
+      <div ref={sectionRef} className="h-screen hide_screen">
+        {/* {mounted && !videoCompleted && ( */}
+        <div className="video_container !absolute top-0 left-0 w-full h-screen z-[9]">
+          <video
+            ref={videoRef}
+            src="/assets/home/hero/video1.mp4"
+            className="w-full h-full object-cover transition-opacity duration-500"
+            autoPlay
+            playsInline
+            muted
+            onEnded={handleVideoEnd}
+          />
+          {/*infite loop text animation*/}
+          <div
+            className="pointer-events-none left-0 w-full overflow-hidden z-[9]"
+            style={{
+              position: "fixed",
+              top: `calc(100vh - 250px)`,
+              // Fallback for JS disabled
+            }}
+          >
+            <h2
+              ref={marqueeRef}
+              className="inline-block whitespace-nowrap uppercase text-[150px] font-semibold leading-none text-white"
+            >
+              {Array.from({ length: 4 }).map((_, i) => (
+                <span key={i} className="inline-flex items-center">
+                  Branding{" "}
+                  <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                  Digital Marketing{" "}
+                  <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                  Double-Digit Growth{" "}
+                  <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                </span>
+              ))}
+            </h2>
+
+            <div className="bottom text-white text-center border-t border-solid border-white mt-[40px] pt-[20px] uppercase font-medium text-[14px] tracking-[1px]">
+              ( Scroll Down )
+            </div>
+          </div>
+          <button
+            ref={skipBtnRef}
+            className="absolute z-[99] top-0 left-0  text-white uppercase tracking-[1px] text-[14px] font-medium bg-[#e24397] px-[30px] py-[14px] rounded-full"
+            onClick={handleVideoEnd}
+          >
+            Skip Video
+          </button>
+        </div>
+      </div>
+
+      <div className="relative md:pt-0 z-[4] mt-[120px]">
         <div
           className={`flex justify-center ${
             videoCompleted ? "2xl:mb-[20px]" : "2xl:mb-[80px]"
@@ -500,238 +660,213 @@ const HeroSection = () => {
             </span>
           </h1>
         </div>
-          
-        <div ref={sectionRef} className="h-screen hide_screen" >
-          {/* {mounted && !videoCompleted && ( */}
-            <div className="video_container !absolute top-0 left-0 w-full h-screen z-[9999]">
-              <video
-              classList="w-full"
-                ref={videoRef}
-                src="/assets/home/hero/video1.mp4"
-                className="w-full h-full object-cover transition-opacity duration-500"
-                autoPlay
-                playsInline
-                muted
-                loop
-                // onEnded={handleVideoEnd}
-              />
-              <button
-                className="absolute right-[100px] bottom-[50px] text-white uppercase tracking-[1px] text-[14px]"
-                onClick={handleVideoEnd}
-              >
-                Skip Video
-              </button>
-            </div>
-          {/* )} */}
-        </div>
-        <div className="flex hidden overflow-hidden slider_content justify-between flex-wrap items-stretch pt-[80px]  2xl:h-[calc(100vh-300px)] lg:h-[calc(100vh-200px)]">
-            <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
-              {HERO_DATA.map((_, index) => (
-                <span
-                  key={index}
-                  className={`block border-b-[1px] border-[#1E251F] transition-all duration-500 mb-[4px] ${
-                    index === activeIndex ? "w-[15%]" : "w-[10%]"
-                  }`}
-                />
-              ))}
-            </div>
 
-            <div
-              className="md:basis-[40%] basis-[90%] m-auto md:h-[calc(100vh)] h-[calc(80vh-200px)] xl:pb-[150px] relative swiper_container"
-              ref={containerRef}
+        <div className="flex hidden overflow-hidden slider_content justify-between flex-wrap items-stretch pt-[80px]  2xl:h-[calc(100vh-300px)] lg:h-[calc(100vh-200px)]">
+          <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
+            {HERO_DATA.map((_, index) => (
+              <span
+                key={index}
+                className={`block border-b-[1px] border-[#1E251F] transition-all duration-500 mb-[4px] ${
+                  index === activeIndex ? "w-[15%]" : "w-[10%]"
+                }`}
+              />
+            ))}
+          </div>
+
+          <div
+            className="md:basis-[40%] basis-[90%] m-auto md:h-[calc(100vh)] h-[calc(80vh-200px)] xl:pb-[150px] relative swiper_container"
+            ref={containerRef}
+          >
+            <Swiper
+              direction="vertical"
+              slidesPerView={1}
+              spaceBetween={8}
+              onInit={(swiper) => {
+                swiperInstance.current = swiper;
+                swiper.slideTo(0);
+                setTimeout(() => {
+                  swiper.slides?.forEach((slide) => {
+                    if (slide) slide.className.remove("swiper-slide-active");
+                  });
+                  swiper.slides[0]?.className.add("swiper-slide-active");
+                  if (videoCompleted) setSwiperReady(true);
+                }, 100);
+              }}
+              freeMode={{
+                enabled: true,
+                sticky: true,
+                momentumBounce: false,
+                momentumRatio: 0.5,
+                momentumVelocityRatio: 0.5,
+              }}
+              mousewheel={{
+                enabled: !isMobile || !isLastSlide,
+                forceToAxis: true,
+                releaseOnEdges: true,
+                sensitivity: 0.3,
+                thresholdDelta: 10,
+              }}
+              touchRatio={isMobile && isLastSlide ? 0 : 1}
+              touchAngle={45}
+              touchMoveStopPropagation={true}
+              touchStartPreventDefault={true}
+              resistanceRatio={0}
+              speed={500}
+              grabCursor={true}
+              pagination={{ clickable: true }}
+              edgeSwipeDetection={true}
+              edgeSwipeThreshold={20}
+              modules={[Mousewheel, Pagination, FreeMode, Virtual, Keyboard]}
+              className="h-full pb-[100px] swiper_main_container"
+              onSlideChange={handleSlideChange}
+              onReachEnd={() => {
+                if (isMobile) {
+                  setIsLastSlide(true);
+                }
+              }}
+              onProgress={(swiper, progress) => {
+                if (!containerRef.current || !headingRef.current) return;
+                const maxSlides = HERO_DATA.length;
+                if (maxSlides === 0) return;
+                const slideProgress =
+                  activeIndex / maxSlides + progress / maxSlides;
+                const rawYOffset = isMobile
+                  ? -800 * slideProgress
+                  : -1800 * slideProgress;
+                const yOffset = rawYOffset === -300 ? 0 : rawYOffset;
+                const scale = isMobile
+                  ? 1 - 0.008 * slideProgress
+                  : 1 - 0.015 * slideProgress;
+                // headingRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale3d(${scale}, ${scale}, 1)`;
+              }}
+              breakpoints={{
+                320: {
+                  slidesPerView: 3,
+                  spaceBetween: 4,
+                  freeMode: {
+                    enabled: true,
+                    sticky: true,
+                    momentumBounce: false,
+                    momentumRatio: 0.5,
+                    momentumVelocityRatio: 0.5,
+                  },
+                },
+                600: {
+                  slidesPerView: 3,
+                  spaceBetween: 6,
+                  freeMode: {
+                    enabled: true,
+                    sticky: true,
+                    momentumBounce: false,
+                    momentumRatio: 0.5,
+                    momentumVelocityRatio: 0.5,
+                  },
+                },
+                768: {
+                  slidesPerView: 3,
+                  spaceBetween: 6,
+                },
+                1280: {
+                  slidesPerView: 3,
+                  spaceBetween: 6,
+                },
+                1320: {
+                  slidesPerView: 4,
+                  spaceBetween: 6,
+                },
+              }}
             >
-              <Swiper
-                direction="vertical"
-                slidesPerView={1}
-                spaceBetween={8}
-                onInit={(swiper) => {
-                  swiperInstance.current = swiper;
-                  swiper.slideTo(0);
-                  setTimeout(() => {
-                    swiper.slides?.forEach((slide) => {
-                      if (slide) slide.classList.remove("swiper-slide-active");
-                    });
-                    swiper.slides[0]?.classList.add("swiper-slide-active");
-                    if (videoCompleted) setSwiperReady(true);
-                  }, 100);
-                }}
-                freeMode={{
-                  enabled: true,
-                  sticky: true,
-                  momentumBounce: false,
-                  momentumRatio: 0.5,
-                  momentumVelocityRatio: 0.5,
-                }}
-                mousewheel={{
-                  enabled: !isMobile || !isLastSlide,
-                  forceToAxis: true,
-                  releaseOnEdges: true,
-                  sensitivity: 0.3,
-                  thresholdDelta: 10,
-                }}
-                touchRatio={isMobile && isLastSlide ? 0 : 1}
-                touchAngle={45}
-                touchMoveStopPropagation={true}
-                touchStartPreventDefault={true}
-                resistanceRatio={0}
-                speed={500}
-                grabCursor={true}
-                pagination={{ clickable: true }}
-                edgeSwipeDetection={true}
-                edgeSwipeThreshold={20}
-                modules={[Mousewheel, Pagination, FreeMode, Virtual, Keyboard]}
-                className="h-full pb-[100px] swiper_main_container"
-                onSlideChange={handleSlideChange}
-                onReachEnd={() => {
-                  if (isMobile) {
-                    setIsLastSlide(true);
-                  }
-                }}
-                onProgress={(swiper, progress) => {
-                  if (!containerRef.current || !headingRef.current) return;
-                  const maxSlides = HERO_DATA.length;
-                  if (maxSlides === 0) return;
-                  const slideProgress =
-                    activeIndex / maxSlides + progress / maxSlides;
-                  const rawYOffset = isMobile
-                    ? -800 * slideProgress
-                    : -1800 * slideProgress;
-                  const yOffset = rawYOffset === -300 ? 0 : rawYOffset;
-                  const scale = isMobile
-                    ? 1 - 0.008 * slideProgress
-                    : 1 - 0.015 * slideProgress;
-                  // headingRef.current.style.transform = `translate3d(0, ${yOffset}px, 0) scale3d(${scale}, ${scale}, 1)`;
-                }}
-                breakpoints={{
-                  320: {
-                    slidesPerView: 3,
-                    spaceBetween: 4,
-                    freeMode: {
-                      enabled: true,
-                      sticky: true,
-                      momentumBounce: false,
-                      momentumRatio: 0.5,
-                      momentumVelocityRatio: 0.5,
-                    },
-                  },
-                  600: {
-                    slidesPerView: 3,
-                    spaceBetween: 6,
-                    freeMode: {
-                      enabled: true,
-                      sticky: true,
-                      momentumBounce: false,
-                      momentumRatio: 0.5,
-                      momentumVelocityRatio: 0.5,
-                    },
-                  },
-                  768: {
-                    slidesPerView: 3,
-                    spaceBetween: 6,
-                  },
-                  1280: {
-                    slidesPerView: 3,
-                    spaceBetween: 6,
-                  },
-                  1320: {
-                    slidesPerView: 4,
-                    spaceBetween: 6,
-                  },
-                }}
-              >
-                {HERO_DATA.map((info, index) => (
-                  <SwiperSlide
-                    key={`${info.id || info.name}-${index}`}
-                    onMouseEnter={() => handleSlideHover(index)}
-                    onMouseLeave={handleSlideMouseLeave}
-                    style={{
-                      transition: "opacity 0.4s ease-in-out",
-                    }}
-                    className={
-                      activeIndex === index ? "swiper-slide-active" : ""
-                    }
+              {HERO_DATA.map((info, index) => (
+                <SwiperSlide
+                  key={`${info.id || info.name}-${index}`}
+                  onMouseEnter={() => handleSlideHover(index)}
+                  onMouseLeave={handleSlideMouseLeave}
+                  style={{
+                    transition: "opacity 0.4s ease-in-out",
+                  }}
+                  className={activeIndex === index ? "swiper-slide-active" : ""}
+                >
+                  <figure
+                    style={{ opacity: videoCompleted ? 1 : 0 }}
+                    className="h-full relative img_container cursor-pointer"
+                    onClick={(e) => handleSlideClick(info, index, e)}
                   >
-                    <figure
-                      style={{ opacity: videoCompleted ? 1 : 0 }}
-                      className="h-full relative img_container cursor-pointer"
-                      onClick={(e) => handleSlideClick(info, index, e)}
-                    >
-                      <div className="overlay_container"></div>
-                      <div className="bc_wrapper">
-                        <div className="left">
-                          <div className="t">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
-                          <div className="b">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
+                    <div className="overlay_container"></div>
+                    <div className="bc_wrapper">
+                      <div className="left">
+                        <div className="t">
+                          <div className="h"></div>
+                          <div className="v"></div>
                         </div>
-                        <div className="right">
-                          <div className="t">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
-                          <div className="b">
-                            <div className="h"></div>
-                            <div className="v"></div>
-                          </div>
+                        <div className="b">
+                          <div className="h"></div>
+                          <div className="v"></div>
                         </div>
                       </div>
-
-                      {info.video ||
-                      info.img.endsWith(".mp4") ||
-                      info.img.endsWith(".webm") ? (
-                        <video
-                          ref={(el) => (mediaRefs.current[index] = el)}
-                          src={`/assets/home/hero/${info.video || info.img}`}
-                          className="w-full h-full z-10 object-cover transition-transform duration-500"
-                          loop
-                          autoPlay
-                          playsInline
-                          muted
-                        />
-                      ) : (
-                        <img
-                          ref={(el) => (mediaRefs.current[index] = el)}
-                          src={`/assets/home/hero/${info.img}`}
-                          className="w-full h-full z-10 object-cover transition-transform duration-500"
-                          alt={info.name}
-                        />
-                      )}
-
-                      {info.name && (
-                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity duration-300">
-                          <img
-                            src="/assets/home/hero/full-screen.png"
-                            alt="zoom_arrow"
-                            height="20"
-                            className="w-[22px]"
-                          />
+                      <div className="right">
+                        <div className="t">
+                          <div className="h"></div>
+                          <div className="v"></div>
                         </div>
-                      )}
-                    </figure>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
-            <div className="flex-[1] z-[7] flex flex-col md:block hidden relative justify-between h-[100%] translate-x-[200%] option_listing mb-[auto] 2xl:mt-[80px] text-right">
-              <ul className="w-auto inline-block">
-                {HERO_DATA.map((info, index) => (
-                  <li
-                    key={index}
-                    onMouseEnter={() => handleTextHover(index)}
-                    onMouseLeave={handleSlideMouseLeave}
-                    className={`font-[Oswald] cursor-pointer 2xl:text-lg md:!text-[16px] !text-[12px] uppercase font-semibold text-right transition-all duration-500 2xl:mb-1 ${
-                      index === activeIndex ? "text-black" : "text-[#b5b6b2]"
-                    }`}
-                  >
-                    {info.name}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                        <div className="b">
+                          <div className="h"></div>
+                          <div className="v"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {info.video ||
+                    info.img.endsWith(".mp4") ||
+                    info.img.endsWith(".webm") ? (
+                      <video
+                        ref={(el) => (mediaRefs.current[index] = el)}
+                        src={`/assets/home/hero/${info.video || info.img}`}
+                        className="w-full h-full z-10 object-cover transition-transform duration-500"
+                        loop
+                        autoPlay
+                        playsInline
+                        muted
+                      />
+                    ) : (
+                      <img
+                        ref={(el) => (mediaRefs.current[index] = el)}
+                        src={`/assets/home/hero/${info.img}`}
+                        className="w-full h-full z-10 object-cover transition-transform duration-500"
+                        alt={info.name}
+                      />
+                    )}
+
+                    {info.name && (
+                      <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                        <img
+                          src="/assets/home/hero/full-screen.png"
+                          alt="zoom_arrow"
+                          height="20"
+                          className="w-[22px]"
+                        />
+                      </div>
+                    )}
+                  </figure>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+          <div className="flex-[1] z-[7] flex flex-col md:block hidden relative justify-between h-[100%] translate-x-[200%] option_listing mb-[auto] 2xl:mt-[80px] text-right">
+            <ul className="w-auto inline-block">
+              {HERO_DATA.map((info, index) => (
+                <li
+                  key={index}
+                  onMouseEnter={() => handleTextHover(index)}
+                  onMouseLeave={handleSlideMouseLeave}
+                  className={`font-[Oswald] cursor-pointer 2xl:text-lg md:!text-[16px] !text-[12px] uppercase font-semibold text-right transition-all duration-500 2xl:mb-1 ${
+                    index === activeIndex ? "text-black" : "text-[#b5b6b2]"
+                  }`}
+                >
+                  {info.name}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
       <button className="bg-[#1E251F] md:hidden block flex gap-[5px] font-[700] relative z-[999] justify-center mt-[15px] place-items-center text-white px-4 py-[2px] font-[500] w-[calc(100%-74px)]  font-[oswald] m-auto before:content-[''] before:absolute before:h-[166px] before:w-[100%] before:bottom-[148px] before:bg-[transparent] ">
@@ -751,10 +886,10 @@ const HeroSection = () => {
 
       {/*infite loop text animation*/}
       {/* {createPortal(
-        <div 
-          className="pointer-events-none left-0 w-full overflow-hidden z-[99]"
-          style={{ 
-            position: 'fixed',
+        <div
+          className="pointer-events-none left-0 w-full overflow-hidden z-[9]"
+          style={{
+            position: "fixed",
             top: `calc(100vh - 170px)`,
             // Fallback for JS disabled
           }}
@@ -765,11 +900,12 @@ const HeroSection = () => {
           >
             {Array.from({ length: 4 }).map((_, i) => (
               <span key={i} className="inline-flex items-center">
-                Branding <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
-                Advertisement <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
-                Marketing <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
-                Design & Development <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
-                &nbsp;
+                Branding{" "}
+                <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                Digital Marketing{" "}
+                <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                Double-Digit Growth{" "}
+                <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
               </span>
             ))}
           </h2>
