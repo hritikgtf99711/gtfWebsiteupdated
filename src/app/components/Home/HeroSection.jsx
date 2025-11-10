@@ -50,6 +50,8 @@ const HeroSection = () => {
   const sectionRef = useRef(null);
   const scrollState = useRef({ locked: false, y: 0 });
   const introPinRef = useRef(null);
+  const marqueeRef = useRef(null);
+  
 
   const dotsConfig = [
     { top: "29%", left: "65%", color: "bg-gtf-blue" },
@@ -234,89 +236,90 @@ const HeroSection = () => {
     []
   );
 
-const handleVideoEnd = () => {
-  document.documentElement.style.overflow = "";
-  document.body.style.overflow = "";
+  const handleVideoEnd = () => {
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
 
-  introPinRef.current?.kill();
-  introPinRef.current = null;
-  document.querySelector('.hide_screen').style.display='none'
+    introPinRef.current?.kill();
+    introPinRef.current = null;
+    document.querySelector('.hide_screen').style.display='none'
 
-  document.querySelector(".slider_content").style.display='flex'
-  setVideoCompleted(true);
+    document.querySelector(".slider_content").style.display='flex'
+    setVideoCompleted(true);
 
-  const tl = gsap.timeline({
-    defaults: { ease: "power2.out" },
-    onComplete: () => {
-      setSwiperReady(true);
-      gsap.delayedCall(0.1, () => {
-        ScrollTrigger.refresh();
-      });
-    },
-  });
-
-  tl.to(videoRef.current, {
-    opacity: 0,
-    duration: 0.5,
-    onComplete: () => {
-      if (videoRef.current) {
-        gsap.set([videoRef.current, '.video_container'], { display: "none" });
-        
-        gsap.delayedCall(0.8, () => {
-          const firstMedia = mediaRefs.current[0];
-          if (firstMedia && "play" in firstMedia) firstMedia.play();
-          
-          mediaRefs.current.forEach((item) => {
-            const parentContainer = item?.parentElement?.parentElement;
-            if (parentContainer) gsap.set(parentContainer, { opacity: 1 });
-          });
+    const tl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      onComplete: () => {
+        setSwiperReady(true);
+        gsap.delayedCall(0.1, () => {
+          ScrollTrigger.refresh();
         });
-      }
-    },
-  });
+      },
+    });
 
-  tl.to(".swiper-slide:first-child", {
-    opacity: 1,
-    scale: 1,
-    duration: 1.2,
-    ease: "expo.out",
-  }, "-=0.3");
+    tl.to(videoRef.current, {
+      opacity: 0,
+      duration: 0.5,
+      onComplete: () => {
+        if (videoRef.current) {
+          gsap.set([videoRef.current, '.video_container'], { display: "none" });
+          
+          gsap.delayedCall(0.8, () => {
+            const firstMedia = mediaRefs.current[0];
+            if (firstMedia && "play" in firstMedia) firstMedia.play();
+            
+            mediaRefs.current.forEach((item) => {
+              const parentContainer = item?.parentElement?.parentElement;
+              if (parentContainer) gsap.set(parentContainer, { opacity: 1 });
+            });
+          });
+        }
+      },
+    });
 
-  tl.fromTo(".option_listing",
-    { x: -50, opacity: 0, scale: 0.9 },
-    { x: 0, opacity: 1, scale: 1, duration: 1, ease: "power3.out" },
-    "-=0.6"
-  );
+    tl.to(".swiper-slide:first-child", {
+      opacity: 1,
+      scale: 1,
+      duration: 1.2,
+      ease: "expo.out",
+    }, "-=0.3");
 
-  tl.fromTo(".right_line",
-    { x: 100, opacity: 0 },
-    { x: 0, opacity: 1, duration: 1.2, ease: "power3.out" },
-    "-=0.8"
-  );
+    tl.fromTo(".option_listing",
+      { x: -50, opacity: 0, scale: 0.9 },
+      { x: 0, opacity: 1, scale: 1, duration: 1, ease: "power3.out" },
+      "-=0.6"
+    );
 
-  tl.fromTo(".rotation_circle",
-    { opacity: 0, scale: 0.8, rotate: -30 },
-    { opacity: 1, scale: 1, rotate: 0, duration: 1.2, ease: "back.out(2)" },
-    "-=0.7"
-  );
+    tl.fromTo(".right_line",
+      { x: 100, opacity: 0 },
+      { x: 0, opacity: 1, duration: 1.2, ease: "power3.out" },
+      "-=0.8"
+    );
 
-  tl.fromTo(line1Ref.current,
-    { width: "0%", opacity: 0, left: "17%" },
-    { width: "25%", opacity: 1, left: "20%", duration: 0.8, ease: "power2.in" }
-  );
+    tl.fromTo(".rotation_circle",
+      { opacity: 0, scale: 0.8, rotate: -30 },
+      { opacity: 1, scale: 1, rotate: 0, duration: 1.2, ease: "back.out(2)" },
+      "-=0.7"
+    );
 
-  tl.fromTo(line2Ref.current,
-    { width: "0%", opacity: 0, right: "25%" },
-    { width: "24%", opacity: 1, right: "20%", duration: 0.8, ease: "power2.in" },
-    "-=0.6"
-  );
+    tl.fromTo(line1Ref.current,
+      { width: "0%", opacity: 0, left: "17%" },
+      { width: "25%", opacity: 1, left: "20%", duration: 0.8, ease: "power2.in" }
+    );
 
-  tl.fromTo(line3Ref.current,
-    { height: "0%", opacity: 0 },
-    { height: "25px", opacity: 1, duration: 0.8, ease: "power2.in" },
-    "-=0.6"
-  );
-};
+    tl.fromTo(line2Ref.current,
+      { width: "0%", opacity: 0, right: "25%" },
+      { width: "24%", opacity: 1, right: "20%", duration: 0.8, ease: "power2.in" },
+      "-=0.6"
+    );
+
+    tl.fromTo(line3Ref.current,
+      { height: "0%", opacity: 0 },
+      { height: "25px", opacity: 1, duration: 0.8, ease: "power2.in" },
+      "-=0.6"
+    );
+  };
+
   const handleSlideClick = useCallback((info, index, event) => {
     setActiveIndex(index);
     setLastActiveIndex(index);
@@ -410,6 +413,27 @@ const handleVideoEnd = () => {
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
+  // infinite marquee
+  useEffect(()=>{
+    if(!marqueeRef.current) return;
+
+    const el = marqueeRef.current;
+    const distance = el.offsetWidth / 2;
+
+    const tl = gsap.timeline({repeat:-1, defaults:{ease:'none'}});
+    
+    tl.fromTo(
+      el,
+      {x:-distance},
+      {x:0, duration:100}
+    );
+
+    // seamless loop: when the first half disappears, jump back instantly
+    tl.set(el, {x:0});
+
+    return()=>tl.kill();
+  }, [])
+
   return (
     <section className={`relative hero_section overflow-hidden mb-[100px] ${videoCompleted ? 'md:px-[50px]' : 'md:px-0'}`}>
       <div className="right-[20px] bottom-[30px] md:block hidden absolute ml-auto">
@@ -478,16 +502,18 @@ const handleVideoEnd = () => {
         </div>
           
         <div ref={sectionRef} className="h-screen hide_screen" >
-          {mounted && !videoCompleted && (
+          {/* {mounted && !videoCompleted && ( */}
             <div className="video_container !absolute top-0 left-0 w-full h-screen z-[9999]">
               <video
+              classList="w-full"
                 ref={videoRef}
-                src="/assets/home/hero/main_video.mp4"
+                src="/assets/home/hero/video1.mp4"
                 className="w-full h-full object-cover transition-opacity duration-500"
                 autoPlay
                 playsInline
                 muted
-                onEnded={handleVideoEnd}
+                loop
+                // onEnded={handleVideoEnd}
               />
               <button
                 className="absolute right-[100px] bottom-[50px] text-white uppercase tracking-[1px] text-[14px]"
@@ -496,7 +522,7 @@ const handleVideoEnd = () => {
                 Skip Video
               </button>
             </div>
-          )}
+          {/* )} */}
         </div>
         <div className="flex hidden overflow-hidden slider_content justify-between flex-wrap items-stretch pt-[80px]  2xl:h-[calc(100vh-300px)] lg:h-[calc(100vh-200px)]">
             <div className="flex-[1] md:block hidden 2xl:mt-[150px] lg:mt-[80px] leading-[1px] translate-x-[-200%] right_line mb-[auto]">
@@ -706,7 +732,7 @@ const handleVideoEnd = () => {
                 ))}
               </ul>
             </div>
-          </div>
+        </div>
       </div>
       <button className="bg-[#1E251F] md:hidden block flex gap-[5px] font-[700] relative z-[999] justify-center mt-[15px] place-items-center text-white px-4 py-[2px] font-[500] w-[calc(100%-74px)]  font-[oswald] m-auto before:content-[''] before:absolute before:h-[166px] before:w-[100%] before:bottom-[148px] before:bg-[transparent] ">
         MEET NOW
@@ -722,6 +748,35 @@ const handleVideoEnd = () => {
         <div className="mix-blend-multiply my-[4px] h-[6px] w-[40px] bg-gtf-yellow"></div>
         <div className="mix-blend-multiply h-[6px] w-[40px] bg-gtf-blue"></div>
       </div>
+
+      {/*infite loop text animation*/}
+      {/* {createPortal(
+        <div 
+          className="pointer-events-none left-0 w-full overflow-hidden z-[99]"
+          style={{ 
+            position: 'fixed',
+            top: `calc(100vh - 170px)`,
+            // Fallback for JS disabled
+          }}
+        >
+          <h2
+            ref={marqueeRef}
+            className="inline-block whitespace-nowrap uppercase text-[150px] font-semibold leading-none text-white"
+          >
+            {Array.from({ length: 4 }).map((_, i) => (
+              <span key={i} className="inline-flex items-center">
+                Branding <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                Advertisement <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                Marketing <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                Design & Development <span className="dot h-[20px] w-[20px] bg-white inline-block mx-[50px]"></span>
+                &nbsp;
+              </span>
+            ))}
+          </h2>
+        </div>,
+        document.body
+      )} */}
+
       {mounted &&
         modalOpen &&
         modalContent &&
