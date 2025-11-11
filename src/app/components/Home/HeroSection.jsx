@@ -598,6 +598,7 @@ const HeroSection = () => {
             src="/assets/home/hero/video1.mp4"
             className="w-full h-full object-cover transition-opacity duration-500"
             autoPlay
+            loop
             playsInline
             muted
             onEnded={handleVideoEnd}
@@ -631,6 +632,7 @@ const HeroSection = () => {
               ( Scroll Down )
             </div>
           </div>
+          
           <button
             ref={skipBtnRef}
             className="absolute z-[99] top-0 left-0  text-white uppercase tracking-[1px] text-[14px] font-medium bg-[#e24397] px-[30px] py-[14px] rounded-full"

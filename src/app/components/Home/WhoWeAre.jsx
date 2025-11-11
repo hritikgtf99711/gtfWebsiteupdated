@@ -363,7 +363,7 @@ const WhoWeAre = () => {
           </div>
         </section>
       </div>
-      <div  ref={backgroundColorRef} className="absolute top-0 left-0 w-full h-full"></div>
+      {/* <div  ref={backgroundColorRef} className="absolute top-0 left-0 w-full h-full"></div> */}
     </section>
   );
 };

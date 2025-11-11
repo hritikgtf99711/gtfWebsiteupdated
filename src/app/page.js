@@ -7,6 +7,7 @@ import WhoWeAreMob from "./components/Home/WhoweAreMob";
 import Clients from "./components/Home/Clients";
 import Solutions from "./components/Home/Solutions";
 import Contact from "./components/Home/Contact";
+import OurWork from "./components/Home/OurWork";
 
 const Home = () => {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -18,6 +19,7 @@ const Home = () => {
       {isMobile ? <WhoWeAreMob /> : <WhoWeAre />}
       {/* {isMobile ? <WhoWeAreMob /> : <WhoWeAre1 />} */}
       <Clients />
+      <OurWork />
       <Solutions />
       <Contact />
     </div>
