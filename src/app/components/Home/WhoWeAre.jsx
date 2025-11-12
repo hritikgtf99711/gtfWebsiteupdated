@@ -177,7 +177,7 @@ const WhoWeAre = () => {
       to(heading, {left:0, transform:"unset", lineHeight:'70px', fontSize:'60px', duration:0.2, ease:"power2"}, "+=0.5").
       to(heading, {autoAlpha:0, duration:0.2, ease:"power2"}).
       to(allChars, {opacity:0.2, duration:0.2, ease:"power2"}, "-=0.3").
-      to(allChars, {opacity: 1,scale: 1, scrub: 0.5, stagger: 0.08, ease: "none"}, "+=0.5")
+      to(allChars, {opacity: 1, scrub: 0.5, stagger: 0.08, ease: "none"}, "+=0.5")
       .to(
         section,
         {

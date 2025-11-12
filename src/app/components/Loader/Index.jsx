@@ -66,7 +66,7 @@ export default function MainLoader() {
           gsap.set(loaderRef.current, {display:'none'}) // remove loader after finish fade effect
         }
       })
-    }, 5000)  
+    }, 6000);
 
 
     return () => {

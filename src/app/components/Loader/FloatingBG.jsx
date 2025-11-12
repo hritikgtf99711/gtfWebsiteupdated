@@ -1,72 +1,77 @@
 "use client";
+import React, { Suspense, useEffect, useState, useMemo } from "react";
+import { Canvas } from "@react-three/fiber";
+import { Float, Preload, RoundedBox } from "@react-three/drei";
+import * as THREE from "three";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { loadSlim } from "@tsparticles/slim";
+const boxes = [
+  { position: [2, -1.5, -1], color: "#e24397", opacity: 0.7 },
+  { position: [-3.5, 1.5, 0], color: "#fde93d", opacity: 0.7 },
+  { position: [3, 2, -1], color: "#2aaee4", opacity: 0.7 },
+  { position: [1, 1, -4], color: "#fde93d", opacity: 0.3 },
+  { position: [-3, -1.8, -4], color: "#2aaee4", opacity: 0.3 },
+  { position: [12, -3, -10], color: "#2aaee4", opacity: 0.1, radius: 0.1 },
+  { position: [-8, 0, -10], color: "#e24397", opacity: 0.1, radius: 0.1 },
+];
 
-export default function FloatingBG() {
-  const [init, setInit] = useState(false);
-
-  // One-time engine init (runs once on mount)
-  useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
-    }).then(() => {
-      setInit(true);
-    });
-  }, []);
-
-  // Particle config – same as before, tweak for your brand
-  const options = useMemo(
-    () => ({
-      background: {
-        color: { value: "transparent" }, // preserves white loader bg
-      },
-      fpsLimit: 120,
-      interactivity: {
-        detectsOn: "canvas",
-        events: {
-          resize: { enable: true },
-        },
-      },
-      particles: {
-        color: { value: ["#e24397", "#fde93d", "#2aaee4"] }, // your palette
-        links: { enable: false },
-        move: {
-          enable: true,
-          speed: 1.2,
-          direction: "none",
-          random: false,
-          straight: false,
-          outModes: { default: "out" },
-        },
-        number: {
-          density: { enable: true, area: 800 },
-          value: 60,
-        },
-        opacity: {
-          value: { min: 0.1, max: 0.6 },
-          animation: { enable: true, speed: 1, sync: false },
-        },
-        shape: { type: "circle" },
-        size: {
-          value: { min: 1, max: 4 },
-          animation: { enable: true, speed: 2, sync: false },
-        },
-      },
-      detectRetina: true,
-    }),
-    []
+/** Re-usable rounded box with Float animation */
+function Box({ position, color, opacity, radius = 0.05 }) {
+  // One material per box – memoised to avoid recreation on every render
+  const material = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color,
+        transparent: true,
+        opacity,
+        metalness: 0.05,
+        roughness: 0.1,
+      }),
+    [color, opacity]
   );
 
-  // Don't render until initialized
-  if (!init) return null;
+  return (
+    <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.6}>
+      <mesh position={position}>
+        <RoundedBox args={[1, 1, 0.3]} radius={radius} smoothness={2}>
+          <primitive attach="material" object={material} />
+        </RoundedBox>
+      </mesh>
+    </Float>
+  );
+}
+
+/** Full-screen background with floating boxes */
+export default function FloatingBG() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null; // avoid SSR
 
   return (
-    <Particles
-      id="tsparticles-loader"
-      options={options}
-      className="absolute inset-0 -z-10"
-    />
+    <div className="fixed inset-0 -z-10 pointer-events-none">
+      <Canvas
+        gl={{ alpha: true, antialias: true }}
+        camera={{ position: [0, 0, 5], fov: 50 }}
+        dpr={[1, 2]}
+      >
+        <Suspense fallback={null}>
+          {/* Lights – one ambient + one directional (centered) */}
+          <ambientLight intensity={1} />
+          <directionalLight
+            position={[-2, 0, 5]}
+            intensity={1}
+            castShadow
+            shadow-mapSize={[1024, 1024]}
+          />
+
+          {/* Render all boxes from the data array */}
+          {boxes.map((b, i) => (
+            <Box key={i} {...b} />
+          ))}
+
+          <Preload all />
+        </Suspense>
+      </Canvas>
+    </div>
   );
 }

@@ -35,7 +35,7 @@ const dataInitial = [
   },
 ];
 
-const OurWork = () => {
+const   OurWork = () => {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const imgRefs = useRef([]);
   const coloredLineRef = useRef(null);
@@ -112,7 +112,7 @@ const OurWork = () => {
   return (
     <section className="z-[2] relative pt-[100px] pb-[150px] bg-[#FDE93D] ">
       <div className="md:px-[25px] px-[15px]">
-        <ScrollText scrolltext={scrollText} position="toLeft" className="mb-[120px] text-[100px]" color="#fff" />
+        <ScrollText scrolltext={scrollText} position="toLeft" className="mb-[80px] text-[100px] bartino-outline tracking-[13px] font-[100]" color="#000" />
 
         <div className="section_data flex items-center gap-[150px]">
           <div className="imageBox h-[450px] w-[350px] relative overflow-hidden">
